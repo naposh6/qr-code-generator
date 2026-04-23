@@ -11,7 +11,7 @@ if ($id) {
         $repo = new QrRepository();
         $repo->delete((int)$id);
     } catch (Exception $e) {
-        
+
     }
 }
 

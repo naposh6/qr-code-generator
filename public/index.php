@@ -11,7 +11,7 @@ Autoloader::register();
 try {
     $db = Database::getInstance()->getConnection();
 } catch (\Exception $e) {
-    die("Connected to database failed: " . $e->getMessage());
+    die("Критична помилка бази даних: " . $e->getMessage());
 }
 
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);

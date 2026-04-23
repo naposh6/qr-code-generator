@@ -24,6 +24,7 @@ try {
         }
 
         $relativePath = $fileService->upload($_FILES['qr_file']);
+
         $finalData = "http://localhost/QR-code generator/public/" . $relativePath;
     } else {
         $finalData = $_POST['content'] ?? '';

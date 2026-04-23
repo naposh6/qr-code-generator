@@ -3,17 +3,16 @@ namespace App\Models;
 use App\Contracts\QrContentInterface;
 
 class FileContent implements QrContentInterface {
-    private string $filePath;
+    private string $fullUrl;
     private string $fileType;
 
-    public function __construct(string $filePath, string $fileType) {
-        $this->filePath = $filePath;
+    public function __construct(string $fullUrl, string $fileType) {
+        $this->fullUrl = $fullUrl;
         $this->fileType = $fileType;
     }
 
     public function getContent(): string {
-        $fileName = basename($this->filePath);
-        return "http://localhost/QR-code generator/public/uploads/qr" . $fileName;
+        return $this->fullUrl;
     }
 
     public function getType(): string { return $this->fileType; }

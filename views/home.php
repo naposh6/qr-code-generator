@@ -1,4 +1,5 @@
 <?php
+
 use App\Repositories\QrRepository;
 
 $qrRepo = new QrRepository();
