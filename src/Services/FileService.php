@@ -4,7 +4,7 @@ use Exception;
 
 class FileService {
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'mp4', 'mov'];
-    private const UPLOAD_DIR = __DIR__ . '/../../public/uploads/';
+    private const UPLOAD_DIR = __DIR__ . '/../../public/uploads/qr/';
 
     public function upload(array $file): string {
         if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -23,10 +23,10 @@ class FileService {
         $newFileName = uniqid('qr_file_', true) . '.' . $extention;
         $destination = self::UPLOAD_DIR . $newFileName;
 
-        if (move_uploaded_file($file['tmp_name'], $destination)) {
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
             throw new Exception("Не вдалося зберегти файл.");
         }
 
-        return $destination;
+        return 'uploads/qr/' . $newFileName;
     }
 }

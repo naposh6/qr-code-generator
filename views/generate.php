@@ -16,10 +16,12 @@ try {
     $data = '';
 
     if ($type === 'image' || $type === 'video') {
-        if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] !== UPLOAD_ERR_OK) {
-            throw new Exception("Будь ласка, виберіть файл для завантаження.");
+        try {
+            $relativePath = $fileService->upload($_FILES['qr_file']);
+            $contentString = "http://localhost/QR-code generator/public/" . $relativePath;
+        } catch (Exception $e) {
+            $error = $e->getMessage();
         }
-        $data = $fileService->upload($_FILES['qr_file']);
     } else {
         $data = $_POST['content'] ?? '';
         if (empty(trim($data))) {
@@ -32,6 +34,20 @@ try {
     $displayContent = $qrContent->getContent();
 
     $qrImageBase64 = $qrService->generate($qrContent);
+
+    if (!$error && !empty($qrImageBase64)) {
+        try {
+            $qrRepo = new \App\Repositories\QrRepository();
+
+            $qrRepo->save(
+                $type,
+                $displayContent,
+                $relativePath ?? null
+            );
+        } catch (\Exception $dbEx) {
+            error_log("Database Error: " . $dbEx->getMessage());
+        }
+    }
 
 } catch (\Exception $e) {
     $error = $e->getMessage();

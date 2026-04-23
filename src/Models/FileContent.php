@@ -13,7 +13,7 @@ class FileContent implements QrContentInterface {
 
     public function getContent(): string {
         $fileName = basename($this->filePath);
-        return "http://localhost/QR-code generator/public/uploads/" . $fileName;
+        return "http://localhost/QR-code generator/public/uploads/qr" . $fileName;
     }
 
     public function getType(): string { return $this->fileType; }
