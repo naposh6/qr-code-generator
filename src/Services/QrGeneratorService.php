@@ -7,8 +7,7 @@ use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Encoding\Encoding;
 
 class QrGeneratorService {
-    public function generate(QrContentInterface $qrContent, ?string $savePath = null): string {
-
+    public function generate(QrContentInterface $qrContent, string $savePath = null): string {
         $qrCode = new QrCode(
             data: $qrContent->getContent(),
             encoding: new Encoding('UTF-8')

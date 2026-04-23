@@ -3,50 +3,47 @@
 use App\Factories\QrContentFactory;
 use App\Services\QrGeneratorService;
 use App\Services\FileService;
+use App\Repositories\QrRepository;
 
 $qrService = new QrGeneratorService();
 $fileService = new FileService();
+$qrRepo = new QrRepository();
 
 $type = $_POST['type'] ?? 'url';
 $error = null;
 $qrImageBase64 = '';
 $displayContent = '';
+$relativePath = null;
 
 try {
-    $data = '';
+    $finalData = '';
 
     if ($type === 'image' || $type === 'video') {
-        try {
-            $relativePath = $fileService->upload($_FILES['qr_file']);
-            $contentString = "http://localhost/QR-code generator/public/" . $relativePath;
-        } catch (Exception $e) {
-            $error = $e->getMessage();
+        if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] === UPLOAD_ERR_NO_FILE) {
+            throw new Exception("Будь ласка, виберіть файл.");
         }
+
+        $relativePath = $fileService->upload($_FILES['qr_file']);
+        $finalData = "http://localhost/QR-code generator/public/" . $relativePath;
     } else {
-        $data = $_POST['content'] ?? '';
-        if (empty(trim($data))) {
+        $finalData = $_POST['content'] ?? '';
+        if (empty(trim($finalData))) {
             throw new Exception("Контент не може бути порожнім.");
         }
     }
 
-    $qrContent = QrContentFactory::create($type, $data);
+    $qrContent = QrContentFactory::create($type, $finalData);
 
     $displayContent = $qrContent->getContent();
 
     $qrImageBase64 = $qrService->generate($qrContent);
 
     if (!$error && !empty($qrImageBase64)) {
-        try {
-            $qrRepo = new \App\Repositories\QrRepository();
-
-            $qrRepo->save(
-                $type,
-                $displayContent,
-                $relativePath ?? null
-            );
-        } catch (\Exception $dbEx) {
-            error_log("Database Error: " . $dbEx->getMessage());
-        }
+        $qrRepo->save(
+            $type,
+            $displayContent,
+            $relativePath
+        );
     }
 
 } catch (\Exception $e) {

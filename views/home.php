@@ -1,3 +1,10 @@
+<?php
+use App\Repositories\QrRepository;
+
+$qrRepo = new QrRepository();
+$history = $qrRepo->getAll(5);
+?>
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -32,6 +39,53 @@
 
                 <button type="submit">Згенерувати QR</button>
             </form>
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+
+            <h3>Останні генерації</h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
+                    <thead>
+                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                        <th style="padding: 10px; text-align: left;">Тип</th>
+                        <th style="padding: 10px; text-align: left;">Контент</th>
+                        <th style="padding: 10px; text-align: left;">Дата</th>
+                        <th style="padding: 10px; text-align: right;">Дія</th> </tr>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php if (empty($history)): ?>
+                        <tr>
+                            <td colspan="3" style="padding: 15px; color: #777;">Історія поки порожня</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($history as $item): ?>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 10px;">
+            <span class="badge" style="background: #3498db; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
+                <?= htmlspecialchars($item['qr_type']) ?>
+            </span>
+                                </td>
+                                <td style="padding: 10px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <?= htmlspecialchars($item['original_url']) ?>
+                                </td>
+                                <td style="padding: 10px; color: #999; font-size: 12px;">
+                                    <?= date('d.m H:i', strtotime($item['created_at'])) ?>
+                                </td>
+
+                                <td style="padding: 10px; text-align: right;">
+                                    <a href="delete.php?id=<?= $item['id'] ?>"
+                                       onclick="return confirm('Видалити цей QR-код з історії?')"
+                                       style="color: #e74c3c; text-decoration: none; font-weight: bold; font-size: 18px; padding: 0 5px;"
+                                       title="Видалити">
+                                        &times;
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

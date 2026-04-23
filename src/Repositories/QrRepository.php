@@ -25,4 +25,21 @@ class QrRepository {
             'qr_type'      => $type
         ]);
     }
+
+    public function getAll(int $limit = 10): array {
+        $sql = "INSERT" . " SELECT * FROM qr_codes ORDER BY created_at DESC LIMIT :limit";
+        $stmt = $this->db->prepare("SELECT * FROM qr_codes ORDER BY created_at DESC LIMIT :limit");
+
+        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function delete(int $id): bool {
+        $sql = "DELETE FROM qr_codes WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+        return $stmt->execute();
+    }
 }
