@@ -5,22 +5,17 @@ use App\Services\QrGeneratorService;
 use App\Services\FileService;
 use App\Repositories\QrRepository;
 
-
 $type = $_POST['type'] ?? 'url';
 $content = $_POST['content'] ?? '';
 $userId = $_SESSION['user_id'] ?? null;
 
 $qrService = new QrGeneratorService();
 $fileService = new FileService();
+$qrRepo = new QrRepository();
 
 $error = null;
 $qrImageBase64 = '';
 $displayContent = '';
-$relativePath = null;
-
-$generatedFilePath = "uploads/qr/qr_" . time() . ".png";
-
-$qrRepo = new QrRepository();
 
 try {
     $finalData = '';
@@ -29,9 +24,7 @@ try {
         if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] === UPLOAD_ERR_NO_FILE) {
             throw new Exception("Будь ласка, виберіть файл.");
         }
-
         $relativePath = $fileService->upload($_FILES['qr_file']);
-
         $finalData = "http://localhost/QR-code generator/public/" . $relativePath;
     } else {
         $finalData = $_POST['content'] ?? '';
@@ -41,17 +34,27 @@ try {
     }
 
     $qrContent = QrContentFactory::create($type, $finalData);
-
     $displayContent = $qrContent->getContent();
 
-    $qrImageBase64 = $qrService->generate($qrContent);
+    $projectRoot = $_SERVER['DOCUMENT_ROOT'] . '/QR-code generator/public/';
+    $uploadDir = 'uploads/qr/';
+
+    if (!is_dir($projectRoot . $uploadDir)) {
+        mkdir($projectRoot . $uploadDir, 0777, true);
+    }
+
+    $fileName = 'qr_img_' . time() . '.png';
+    $fullSavePath = $projectRoot . $uploadDir . $fileName;
+    $dbPath = $uploadDir . $fileName;
+
+    $qrImageBase64 = $qrService->generate($qrContent, $fullSavePath);
 
     if (!empty($qrImageBase64)) {
         $qrRepo->save(
                 $type,
                 $displayContent,
                 $userId,
-                $relativePath
+                $dbPath
         );
     }
 
@@ -70,6 +73,9 @@ try {
 <body>
 <div class="container">
     <div class="card" style="text-align: center;">
+        <div style="text-align: left; margin-bottom: 20px;">
+            <a href="/QR-code generator/public/" class="apple-link" style="text-decoration: none;">← На головну</a>
+        </div>
         <h1>Ваш QR-код</h1>
 
         <?php if ($error): ?>
@@ -84,8 +90,10 @@ try {
                 <img src="<?= $qrImageBase64 ?>" alt="QR Code" class="result-img" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; background: white;">
 
                 <div style="margin-bottom: 20px; word-break: break-all;">
-                    <label>Вміст коду:</label>
-                    <p><code><?= htmlspecialchars($displayContent) ?></code></p>
+                    <p>Вміст коду:</p>
+                    <a href="<?= htmlspecialchars($displayContent) ?>" target="_blank" style="color: #0071e3; text-decoration: none;">
+                        <?= htmlspecialchars($displayContent) ?>
+                    </a>
                 </div>
 
                 <div class="actions">
