@@ -5,15 +5,23 @@ use App\Services\QrGeneratorService;
 use App\Services\FileService;
 use App\Repositories\QrRepository;
 
-$qrService = new QrGeneratorService();
-$fileService = new FileService();
-$qrRepo = new QrRepository();
 
 $type = $_POST['type'] ?? 'url';
+$content = $_POST['content'] ?? '';
+$userId = $_SESSION['user_id'] ?? null;
+
+$qrService = new QrGeneratorService();
+$fileService = new FileService();
+
 $error = null;
 $qrImageBase64 = '';
 $displayContent = '';
 $relativePath = null;
+
+$generatedFilePath = "uploads/qr/qr_" . time() . ".png";
+
+$qrRepo = new QrRepository();
+$success = $qrRepo->save($type, $content, $userId, $generatedFilePath);
 
 try {
     $finalData = '';
@@ -39,11 +47,12 @@ try {
 
     $qrImageBase64 = $qrService->generate($qrContent);
 
-    if (!$error && !empty($qrImageBase64)) {
+    if (!empty($qrImageBase64)) {
         $qrRepo->save(
-            $type,
-            $displayContent,
-            $relativePath
+                $type,
+                $displayContent,
+                $userId,
+                $relativePath
         );
     }
 

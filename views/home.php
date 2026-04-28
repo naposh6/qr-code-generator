@@ -4,6 +4,15 @@ use App\Repositories\QrRepository;
 
 $qrRepo = new QrRepository();
 $history = $qrRepo->getAll(5);
+
+$userId = $_SESSION['user_id'] ?? null;
+$userRole = $_SESSION['role'] ?? 'guest';
+
+if ($userRole === 'admin') {
+    $history = $qrRepo->getAll(10);
+} else {
+    $history = $qrRepo->getByUserId($userId, 5);
+}
 ?>
 
 <!DOCTYPE html>
@@ -16,6 +25,15 @@ $history = $qrRepo->getAll(5);
 <body>
     <div class="container">
         <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <span>Ви ввійшли як: <strong><?= htmlspecialchars($_SESSION['user_email']) ?></strong> (<?= $userRole ?>)</span>
+                <div>
+                    <?php if ($userRole === 'admin'): ?>
+                        <a href="admin" style="background: #e67e22; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-right: 10px;">⚙️ ПАНЕЛЬ АДМІНА</a>
+                    <?php endif; ?>
+                    <a href="logout" style="color: #e74c3c;">Вихід</a>
+                </div>
+            </div>
             <h1>GenerQR</h1>
             <form action="/QR-code generator/public/generate" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
