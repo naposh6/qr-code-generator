@@ -18,77 +18,51 @@
 </head>
 <body>
 <div class="container">
-    <h1>Панель керування (Адмін)</h1>
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+        <h1 style="margin: 0; font-weight: 700; letter-spacing: -0.5px;">Керування системою</h1>
+        <a href="/QR-code generator/public/" class="apple-link">← Назад</a>
+    </header>
 
     <div class="stats-grid">
-        <div class="stat-card">
-            <p>Користувачів</p>
-            <h2><?= $stats['total_users'] ?></h2>
+        <div class="card stat-card">
+            <span style="color: #86868b; font-size: 14px; font-weight: 600;">КОРИСТУВАЧІ</span>
+            <h2 style="font-size: 32px; margin: 10px 0;"><?= $stats['total_users'] ?></h2>
         </div>
-        <div class="stat-card">
-            <p>Всього QR-кодів</p>
-            <h2><?= $stats['total_qrs'] ?></h2>
-        </div>
-        <div class="stat-card">
-            <p>Останній юзер</p>
-            <small><?= $stats['latest_user'] ?></small>
+        <div class="card stat-card">
+            <span style="color: #86868b; font-size: 14px; font-weight: 600;">QR-КОДИ</span>
+            <h2 style="font-size: 32px; margin: 10px 0;"><?= $stats['total_qrs'] ?></h2>
         </div>
     </div>
 
-    <h3>Керування користувачами</h3>
-    <table style="width:100%; background: #fff; border-radius: 8px; margin-bottom: 40px; border-collapse: collapse;">
-        <thead>
-        <tr style="background: #f1f1f1;">
-            <th style="padding: 10px;">Email</th>
-            <th style="padding: 10px;">Роль</th>
-            <th style="padding: 10px;">Дата реєстрації</th>
-            <th style="padding: 10px; text-align: right;">Дія</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($allUsers as $user): ?>
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 10px;"><?= htmlspecialchars($user['email']) ?></td>
-                <td style="padding: 10px;"><?= $user['role'] ?></td>
-                <td style="padding: 10px;"><?= $user['created_at'] ?></td>
-                <td style="padding: 10px; text-align: right;">
-                    <?php if ($user['role'] !== 'admin'): ?>
-                        <a href="admin/delete-user?id=<?= $user['id'] ?>"
-                           style="color: white; background: #e74c3c; padding: 5px 10px; border-radius: 3px; text-decoration: none; font-size: 12px;"
-                           onclick="return confirm('Видалити цього користувача?')">Видалити</a>
-                    <?php endif; ?>
-                </td>
+    <div class="card" style="margin-top: 30px; overflow-x: auto;">
+        <h3 style="margin-top: 0;">Користувачі</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid #d2d2d7; text-align: left; color: #86868b; font-size: 13px;">
+                <th style="padding: 15px 0;">EMAIL</th>
+                <th style="padding: 15px 0;">РОЛЬ</th>
+                <th style="padding: 15px 0; text-align: right;">ДІЇ</th>
             </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-
-    <h3>Всі генерації системи</h3>
-    <table style="width:100%; background: #fff; border-radius: 8px;">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>User ID</th>
-            <th>Тип</th>
-            <th>Контент</th>
-            <th>Дата</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($allQrs as $qr): ?>
-            <tr>
-                <td><?= $qr['id'] ?></td>
-                <td><strong>User #<?= $qr['user_id'] ?></strong></td>
-                <td><?= $qr['qr_type'] ?></td>
-                <td><?= htmlspecialchars($qr['original_url']) ?></td>
-                <td><?= $qr['created_at'] ?></td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-
-    <br>
-    <a href="./" style="color: #3498db;">← Повернутися до свого кабінету</a>
+            <?php foreach ($allUsers as $user): ?>
+                <tr style="border-bottom: 1px solid #f5f5f7;">
+                    <td style="padding: 15px 0; font-weight: 500;"><?= htmlspecialchars($user['email']) ?></td>
+                    <td style="padding: 15px 0;">
+                        <form action="admin/update-role" method="POST" style="margin: 0;">
+                            <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                            <select name="role" onchange="this.form.submit()" style="padding: 4px 8px; font-size: 13px; width: auto; background: none;">
+                                <option value="user" <?= $user['role'] === 'user' ? 'selected' : '' ?>>User</option>
+                                <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td style="padding: 15px 0; text-align: right;">
+                        <?php if ($user['role'] !== 'admin'): ?>
+                            <a href="admin/delete-user?id=<?= $user['id'] ?>" style="color: #ff3b30; text-decoration: none; font-size: 14px;">Видалити</a>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    </div>
 </div>
 </body>
 </html>

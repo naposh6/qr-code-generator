@@ -36,4 +36,12 @@ class UserRepository {
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
+
+    public function updateRole(int $userId, string $role): bool {
+        $sql = "UPDATE users SET role = :role WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':role', $role);
+        $stmt->bindValue(':id', $userId, \PDO::PARAM_INT);
+        return $stmt->execute();
+    }
 }
