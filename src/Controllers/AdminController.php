@@ -9,15 +9,12 @@ class AdminController {
     private $userRepo;
 
     public function __construct() {
-        if (($_SESSION["role"] ?? '') !== 'admin') {
-            header("Location: /QR-code generator/public/");
-            exit;
-        }
         $this->qrRepo = new QrRepository();
         $this->userRepo = new UserRepository();
     }
 
     public function dashboard() {
+        $this->checkAdmin();
         $allUsers = $this->userRepo->getAllUsers();
         $allQrs = $this->qrRepo->getAll(100);
 
@@ -31,6 +28,7 @@ class AdminController {
     }
 
     public function updateRole() {
+        $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = $_POST['user_id'];
             $newRole = $_POST['role'];
@@ -38,6 +36,13 @@ class AdminController {
             $this->userRepo->updateRole($userId, $newRole);
         }
         header("Location: /QR-code generator/public/admin");
+    }
+
+    private function checkAdmin() {
+        if (($_SESSION["role"] ?? '') !== 'admin') {
+            header("Location: /QR-code generator/public/");
+            exit;
+        }
     }
 
     public function getUsersAjax() {
@@ -59,5 +64,46 @@ class AdminController {
         }
         header("Location: /QR-code generator/public/admin");
         exit;
+    }
+
+    public function deleteQrs() {
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
+
+        if (!isset($data['ids']) || !is_array($data['ids'])) {
+            echo json_encode(['success' => false, 'message' => 'Невірні дані']);
+            return;
+        }
+
+        $currentUserId = $_SESSION['user_id'] ?? null;
+        $currentUserRole = $_SESSION['role'] ?? '';
+
+        $allowedIds = [];
+        foreach ($data['ids'] as $id) {
+            $qr = $this->qrRepo->getById((int)$id);
+
+            if ($qr) {
+                if ($currentUserRole === 'admin' || (int)$qr['user_id'] === (int)$currentUserId) {
+                    $allowedIds[] = (int)$id;
+
+                    if (!empty($qr['media_path'])) {
+                        $fullPath = __DIR__ . '/../../public/' . $qr['media_path'];
+                        if (file_exists($fullPath)) {
+                            unlink($fullPath);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (empty($allowedIds)) {
+            echo json_encode(['success' => false, 'message' => 'Немає прав на видалення цих об\'єктів']);
+            return;
+        }
+
+        $result = $this->qrRepo->deleteMultiple($allowedIds);
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => $result]);
     }
 }

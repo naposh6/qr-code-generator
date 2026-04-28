@@ -13,6 +13,7 @@ use App\Core\Database;
 use App\Controllers\AuthController;
 use App\Controllers\AdminController;
 use App\Controllers\UserController;
+use App\Repositories\QrRepository;
 
 Autoloader::register();
 
@@ -30,54 +31,77 @@ $baseDir = str_replace('/index.php', '', $scriptName);
 
 $path = substr($requestUri, strlen($baseDir));
 $path = ($path === '' || $path === '/') ? '/' : $path;
-
 $path = str_replace('/index.php', '', $path);
 $path = ($path === '') ? '/' : $path;
 
 $auth = new AuthController();
 
+// Маршрути авторизації
 if ($path === '/login' || $path === '/register') {
     if (isset($_SESSION['user_id'])) {
         header('Location: ' . $baseDir . '/');
         exit;
     }
-
     if ($path === '/login') $auth->login();
     else $auth->register();
 
- } elseif ($path === '/profile') {
+// Маршрути профілю
+} elseif ($path === '/profile') {
     $userCtrl = new UserController();
     $userCtrl->profile();
+
 } elseif ($path === '/profile/update-password') {
     $userController = new UserController();
     $userController->updatePassword();
- }  elseif ($path === '/admin') {
+
+// Маршрути адмін-панелі
+}  elseif ($path === '/admin') {
     $admin = new AdminController();
     $admin->dashboard();
- } elseif ($path === '/admin/get-users-ajax') {
+
+} elseif ($path === '/admin/get-users-ajax') {
     $admin = new AdminController();
     $admin->getUsersAjax();
- } elseif ($path === '/admin/get-qrs-ajax') {
+
+} elseif ($path === '/admin/get-qrs-ajax') {
     $admin = new AdminController();
     $admin->getQrsAjax();
- } elseif ($path === '/admin/update-role') {
+
+} elseif ($path === '/admin/update-role') {
     $admin = new AdminController();
     $admin->updateRole();
- } elseif ($path === '/admin/delete-user') {
+
+} elseif ($path === '/admin/delete-user') {
     $admin = new AdminController();
     $admin->deleteUser();
- }  elseif ($path === '/') {
+
+} elseif ($path === '/admin/delete-qrs') {
+    $admin = new AdminController();
+    $admin->deleteQrs();
+
+} elseif ($path === '/delete-qrs') {
+    $user = new UserController();
+    $user->deleteMyQrs();
+
+} elseif ($path === '/') {
     if (!isset($_SESSION['user_id'])) {
         header('Location: ' . $baseDir . '/login');
         exit;
     }
+
+    $qrRepo = new QrRepository();
+    $recentQrs = $qrRepo->getByUserId($_SESSION['user_id'], 5);
+
     require_once __DIR__ . '/../views/home.php';
 
 } elseif ($path === '/logout') {
     $auth->logout();
 
 } elseif ($path === '/generate') {
-    if (!isset($_SESSION['user_id'])) { header('Location: login'); exit; }
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: login');
+        exit;
+    }
     require_once __DIR__ . '/../views/generate.php';
 
 } else {

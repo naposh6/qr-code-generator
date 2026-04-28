@@ -39,6 +39,15 @@ class QrRepository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getById(int $id): ?array {
+        $sql = "SELECT * FROM qr_codes WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
+
     public function getAll(int $limit = 10): array {
         $sql = "SELECT * FROM qr_codes ORDER BY created_at DESC LIMIT :limit";
         $stmt = $this->db->prepare($sql);
@@ -52,5 +61,16 @@ class QrRepository {
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
         return $stmt->execute();
+    }
+
+    public function deleteMultiple(array $ids): bool {
+        if (empty($ids)) return false;
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        $sql = "DELETE FROM qr_codes WHERE id IN ($placeholders)";
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute($ids);
     }
 }
