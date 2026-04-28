@@ -1,10 +1,17 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+session_start();
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Autoloader.php';
 
 use App\Core\Autoloader;
 use App\Core\Database;
+use App\Controllers\AuthController;
+use App\Controllers\AdminController;
 
 Autoloader::register();
 
@@ -26,10 +33,40 @@ $path = ($path === '' || $path === '/') ? '/' : $path;
 $path = str_replace('/index.php', '', $path);
 $path = ($path === '') ? '/' : $path;
 
-if ($path === '/') {
+$auth = new AuthController();
+
+if ($path === '/login' || $path === '/register') {
+    if (isset($_SESSION['user_id'])) {
+        header('Location: ' . $baseDir . '/');
+        exit;
+    }
+
+    if ($path === '/login') $auth->login();
+    else $auth->register();
+
+ } elseif ($path === '/profile') {
+    $userCtrl = new \App\Controllers\UserController();
+    $userCtrl->profile();
+ }elseif ($path === '/admin') {
+    $admin = new AdminController();
+    $admin->dashboard();
+ } elseif ($path === '/admin/delete-user') {
+    $admin = new AdminController();
+    $admin->deleteUser();
+ }  elseif ($path === '/') {
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: ' . $baseDir . '/login');
+        exit;
+    }
     require_once __DIR__ . '/../views/home.php';
+
+} elseif ($path === '/logout') {
+    $auth->logout();
+
 } elseif ($path === '/generate') {
+    if (!isset($_SESSION['user_id'])) { header('Location: login'); exit; }
     require_once __DIR__ . '/../views/generate.php';
+
 } else {
     http_response_code(404);
     echo "<h1>404 - Сторінку не знайдено</h1>";
