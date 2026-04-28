@@ -21,8 +21,21 @@ class UserController {
 
     public function updatePassword() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $newPassword = $_POST['password'] ?? '';
-            echo "Пароль успішно оновлено";
+            $password = $_POST['password'] ?? '';
+            $confirm = $_POST['password_confirm'] ?? '';
+            $userId = $_SESSION['user_id'];
+
+            if ($password === $confirm && strlen($password) >= 6) {
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+                $userRepo = new UserRepository();
+                $userRepo->updatePassword($userId, $hashedPassword);
+
+                header("Location: /QR-code generator/public/profile?success=1");
+                exit;
+            } else {
+                die("Паролі не збігаються або занадто короткі!");
+            }
         }
     }
 }

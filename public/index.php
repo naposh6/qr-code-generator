@@ -12,6 +12,7 @@ use App\Core\Autoloader;
 use App\Core\Database;
 use App\Controllers\AuthController;
 use App\Controllers\AdminController;
+use App\Controllers\UserController;
 
 Autoloader::register();
 
@@ -45,11 +46,20 @@ if ($path === '/login' || $path === '/register') {
     else $auth->register();
 
  } elseif ($path === '/profile') {
-    $userCtrl = new \App\Controllers\UserController();
+    $userCtrl = new UserController();
     $userCtrl->profile();
- } elseif ($path === '/admin') {
+} elseif ($path === '/profile/update-password') {
+    $userController = new UserController();
+    $userController->updatePassword();
+ }  elseif ($path === '/admin') {
     $admin = new AdminController();
     $admin->dashboard();
+ } elseif ($path === '/admin/get-users-ajax') {
+    $admin = new AdminController();
+    $admin->getUsersAjax();
+ } elseif ($path === '/admin/get-qrs-ajax') {
+    $admin = new AdminController();
+    $admin->getQrsAjax();
  } elseif ($path === '/admin/update-role') {
     $admin = new AdminController();
     $admin->updateRole();
