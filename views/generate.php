@@ -21,7 +21,6 @@ $relativePath = null;
 $generatedFilePath = "uploads/qr/qr_" . time() . ".png";
 
 $qrRepo = new QrRepository();
-$success = $qrRepo->save($type, $content, $userId, $generatedFilePath);
 
 try {
     $finalData = '';

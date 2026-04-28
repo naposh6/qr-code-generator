@@ -30,6 +30,16 @@ class AdminController {
         require_once __DIR__ . '/../../views/admin/dashboard.php';
     }
 
+    public function updateRole() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $userId = $_POST['user_id'];
+            $newRole = $_POST['role'];
+            // Тут виклик методу в UserRepository
+            $this->userRepo->updateRole($userId, $newRole);
+        }
+        header("Location: /QR-code generator/public/admin");
+    }
+
     public function deleteUser() {
         $id = $_GET['id'] ?? null;
         if ($id && is_numeric($id)) {

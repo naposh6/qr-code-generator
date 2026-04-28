@@ -47,9 +47,12 @@ if ($path === '/login' || $path === '/register') {
  } elseif ($path === '/profile') {
     $userCtrl = new \App\Controllers\UserController();
     $userCtrl->profile();
- }elseif ($path === '/admin') {
+ } elseif ($path === '/admin') {
     $admin = new AdminController();
     $admin->dashboard();
+ } elseif ($path === '/admin/update-role') {
+    $admin = new AdminController();
+    $admin->updateRole();
  } elseif ($path === '/admin/delete-user') {
     $admin = new AdminController();
     $admin->deleteUser();
