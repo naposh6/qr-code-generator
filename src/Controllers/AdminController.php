@@ -40,6 +40,16 @@ class AdminController {
         header("Location: /QR-code generator/public/admin");
     }
 
+    public function getUsersAjax() {
+        $allUsers = $this->userRepo->getAllUsers();
+        require_once __DIR__ . '/../../views/admin/_users_table.php';
+    }
+
+    public function getQrsAjax() {
+        $allQrs = $this->qrRepo->getAll(100);
+        require_once __DIR__ . '/../../views/admin/_qr_table.php';
+    }
+
     public function deleteUser() {
         $id = $_GET['id'] ?? null;
         if ($id && is_numeric($id)) {

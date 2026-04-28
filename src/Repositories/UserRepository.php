@@ -44,4 +44,12 @@ class UserRepository {
         $stmt->bindValue(':id', $userId, \PDO::PARAM_INT);
         return $stmt->execute();
     }
+
+    public function updatePassword(int $userId, string $hashedPassword): bool {
+        $sql = "UPDATE users SET password = :password WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':password', $hashedPassword);
+        $stmt->bindValue(':id', $userId, \PDO::PARAM_INT);
+        return $stmt->execute();
+    }
 }

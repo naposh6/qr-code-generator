@@ -13,7 +13,7 @@
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h1>Мій профіль</h1>
-            <a href="/QR-code generator/public/" style="text-decoration: none; color: #3498db;">← На головну</a>
+            <a href="/QR-code generator/public/" class="apple-link secondary">← На головну</a>
         </div>
 
         <div class="profile-info" style="margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 8px;">

@@ -25,15 +25,20 @@ if ($userRole === 'admin') {
 <body>
     <div class="container">
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <span>Ви ввійшли як: <strong><?= htmlspecialchars($_SESSION['user_email']) ?></strong> (<?= $userRole ?>)</span>
-                <div>
-                    <?php if ($userRole === 'admin'): ?>
-                        <a href="admin" style="background: #e67e22; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-right: 10px;">⚙️ ПАНЕЛЬ АДМІНА</a>
-                    <?php endif; ?>
-                    <a href="logout" style="color: #e74c3c;">Вихід</a>
+            <nav class="user-nav">
+                <div class="user-info">
+                    <span>Привіт, <strong><?= htmlspecialchars($_SESSION['user_email']) ?></strong></span>
                 </div>
-            </div>
+                <div class="nav-links">
+                    <a href="profile" class="apple-link">Мій профіль</a>
+
+                    <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+                        <a href="admin" class="admin-badge">⚙️ Адмін-панель</a>
+                    <?php endif; ?>
+
+                    <a href="logout" class="apple-link logout-link">Вихід</a>
+                </div>
+            </nav>
             <h1>GenerQR</h1>
             <form action="/QR-code generator/public/generate" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
