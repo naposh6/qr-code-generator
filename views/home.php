@@ -54,7 +54,41 @@ if (!isset($recentQrs)) {
                 <input type="file" name="qr_file">
             </div>
 
-            <button type="submit">Згенерувати QR</button>
+            <div class="form-group">
+                <label>Назва (необов'язково)</label>
+                <input type="text" name="title" placeholder="Наприклад: Меню ресторану">
+            </div>
+
+            <div class="editor-settings" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; padding: 15px; background: #f5f5f7; border-radius: 12px;">
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-size: 12px;">Колір коду</label>
+                    <input type="color" name="qr_color" value="#000000" style="height: 40px; padding: 2px; cursor: pointer; border: none; background: none; width: 100%;">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-size: 12px;">Колір фону</label>
+                    <input type="color" name="bg_color" value="#ffffff" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin: 0; grid-column: span 2;">
+                    <label style="font-size: 12px;">Логотип (PNG/JPG)</label>
+                    <input type="file" name="qr_logo" accept="image/*" style="font-size: 11px;">
+                </div>
+                <div class="form-group" style="margin: 0; grid-column: span 2;">
+                    <label style="font-size: 12px;">Стиль точок</label>
+                    <select name="qr_style" style="width: 100%;">
+                        <option value="square">Класичні квадрати</option>
+                        <option value="circle">Круглі модулі (Dots)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-size: 12px;">Розмір (px)</label>
+                    <select name="qr_size" style="width: 100%;">
+                        <option value="200">Маленький (200)</option>
+                        <option value="400" selected>Середній (400)</option>
+                        <option value="600">Великий (600)</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" style="margin-top: 20px;">Згенерувати QR</button>
         </form>
     </div>
 
@@ -115,7 +149,7 @@ if (!isset($recentQrs)) {
 
                                 <div style="overflow: hidden; max-width: 250px;">
                                     <div style="font-weight: 600; font-size: 13px; color: #1d1d1f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        <?= htmlspecialchars(basename($qr['original_url'])) ?>
+                                        <?= !empty($qr['title']) ? htmlspecialchars($qr['title']) : htmlspecialchars(basename($qr['original_url'])) ?>
                                     </div>
                                     <div style="font-size: 11px; color: #0071e3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                         <?= htmlspecialchars($qr['original_url']) ?>

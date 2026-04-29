@@ -24,6 +24,19 @@ try {
 
     $finalData = '';
 
+    $title = $_POST['title'] ?? null;
+    $options = [
+            'color' => $_POST['qr_color'] ?? '#000000',
+            'bg_color' => $_POST['bg_color'] ?? '#ffffff',
+            'size'  => (int)($_POST['qr_size'] ?? 400),
+            'qr_style' => $_POST['qr_style'] ?? 'square', // ДОДАЙ ЦЕ
+            'logo_path' => null
+    ];
+
+    if (isset($_FILES['qr_logo']) && $_FILES['qr_logo']['error'] === UPLOAD_ERR_OK) {
+        $options['logo_path'] = $_FILES['qr_logo']['tmp_name'];
+    }
+
     if ($type === 'image' || $type === 'video') {
         if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] === UPLOAD_ERR_NO_FILE) {
             throw new Exception("Будь ласка, виберіть файл.");
@@ -53,14 +66,15 @@ try {
     $fullSavePath = $projectRoot . $qrDir . $fileName;
     $dbPath = $qrDir . $fileName;
 
-    $qrImageBase64 = $qrService->generate($qrContent, $fullSavePath);
+    $qrImageBase64 = $qrService->generate($qrContent, $fullSavePath, $options);
 
     if (!empty($qrImageBase64)) {
         $qrRepo->save(
                 $type,
                 $displayContent,
                 $userId,
-                $dbPath
+                $dbPath,
+                $title
         );
     }
 
@@ -83,6 +97,12 @@ try {
             <a href="/QR-code generator/public/" class="apple-link" style="text-decoration: none;">← На головну</a>
         </div>
         <h1>Ваш QR-код</h1>
+
+        <?php if (!empty($title)): ?>
+            <h2 style="font-size: 18px; color: #86868b; margin-top: -10px; margin-bottom: 20px; font-weight: 500;">
+                <?= htmlspecialchars($title) ?>
+            </h2>
+        <?php endif; ?>
 
         <?php if ($error): ?>
             <div style="color: #e74c3c; margin-bottom: 20px;">
