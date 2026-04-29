@@ -24,8 +24,10 @@ try {
         if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] === UPLOAD_ERR_NO_FILE) {
             throw new Exception("Будь ласка, виберіть файл.");
         }
-        $relativePath = $fileService->upload($_FILES['qr_file']);
-        $finalData = "http://localhost/QR-code generator/public/" . $relativePath;
+        $relativePath = $fileService->upload($_FILES['qr_file'], $type);
+
+        $baseUrl = "http://localhost/QR-code generator/public/";
+        $finalData = $baseUrl . $relativePath;
     } else {
         $finalData = $_POST['content'] ?? '';
         if (empty(trim($finalData))) {
@@ -37,15 +39,15 @@ try {
     $displayContent = $qrContent->getContent();
 
     $projectRoot = $_SERVER['DOCUMENT_ROOT'] . '/QR-code generator/public/';
-    $uploadDir = 'uploads/qr/';
+    $qrDir = 'uploads/qr/';
 
-    if (!is_dir($projectRoot . $uploadDir)) {
-        mkdir($projectRoot . $uploadDir, 0777, true);
+    if (!is_dir($projectRoot . $qrDir)) {
+        mkdir($projectRoot . $qrDir, 0777, true);
     }
 
     $fileName = 'qr_img_' . time() . '.png';
-    $fullSavePath = $projectRoot . $uploadDir . $fileName;
-    $dbPath = $uploadDir . $fileName;
+    $fullSavePath = $projectRoot . $qrDir . $fileName;
+    $dbPath = $qrDir . $fileName;
 
     $qrImageBase64 = $qrService->generate($qrContent, $fullSavePath);
 

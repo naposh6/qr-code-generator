@@ -4,11 +4,11 @@ use Exception;
 
 class FileService {
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'mp4', 'mov'];
-    private const UPLOAD_DIR = __DIR__ . '/../../public/uploads/qr/';
+    private const BASE_UPLOAD_DIR = __DIR__ . '/../../public/uploads/';
 
-    public function upload(array $file): string {
+    public function upload(array $file, string $type): string {
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            throw new Exception("Upload failed: " . $file['error']);
+            throw new Exception("Помилка завантаження: " . $file['error']);
         }
 
         $extention = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -16,17 +16,30 @@ class FileService {
             throw new Exception("Формат .$extention не підтримується.");
         }
 
-        if (!is_dir(self::UPLOAD_DIR)) {
-            mkdir(self::UPLOAD_DIR, 0777, true);
+        $subDir = ($type === 'video') ? 'videos/' : 'images/';
+        $finalDir = self::BASE_UPLOAD_DIR . $subDir;
+
+        if (!is_dir($finalDir)) {
+            mkdir($finalDir, 0777, true);
         }
 
-        $newFileName = uniqid('qr_file_', true) . '.' . $extention;
-        $destination = self::UPLOAD_DIR . $newFileName;
+        $newFileName = uniqid('file_', true) . '.' . $extention;
+        $destination = $finalDir . $newFileName;
 
         if (!move_uploaded_file($file['tmp_name'], $destination)) {
             throw new Exception("Не вдалося зберегти файл.");
         }
 
-        return 'uploads/qr/' . $newFileName;
+        return 'uploads/' . $subDir . $newFileName;
+    }
+
+    public function deleteFile(string $relativePath): bool {
+        $fullPath = __DIR__ . '/../../public/' . $relativePath;
+
+        if (file_exists($fullPath) && is_file($fullPath)) {
+            return unlink($fullPath); // Видаляємо файл
+        }
+
+        return false;
     }
 }

@@ -34,6 +34,19 @@ $path = ($path === '' || $path === '/') ? '/' : $path;
 $path = str_replace('/index.php', '', $path);
 $path = ($path === '') ? '/' : $path;
 
+$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$requestPath = urldecode($requestPath);
+$relativePath = str_replace($baseDir, '', $requestPath);
+
+$fullPathToFile = __DIR__ . $relativePath;
+
+if ($relativePath !== '/' && is_file($fullPathToFile)) {
+    $mimeType = mime_content_type($fullPathToFile);
+    header("Content-Type: $mimeType");
+    readfile($fullPathToFile);
+    exit;
+}
+
 $auth = new AuthController();
 
 // Маршрути авторизації

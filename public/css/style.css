@@ -121,14 +121,13 @@ button:hover {
     border: 1px solid rgba(0,0,0,0.03);
 }
 
-/* Специфічні фони для карток (Порада №4) */
 .stat-card:nth-child(1) {
-    background: rgba(0, 113, 227, 0.08); /* Легкий блакитний */
+    background: rgba(0, 113, 227, 0.08);
     color: #0071e3;
 }
 
 .stat-card:nth-child(2) {
-    background: #f5f5f7; /* Світло-сірий */
+    background: #f5f5f7;
     color: #1d1d1f;
 }
 
