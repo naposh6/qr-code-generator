@@ -12,19 +12,29 @@ class QrRepository {
     }
 
     public function save(string $type, string $content, ?int $userId, ?string $filePath = null) : bool {
-        $shortCode = substr(md5(uniqid()), 0, 8);
+        $shortCode = $shortCode ?? substr(md5(uniqid()), 0, 8);
 
         $sql = "INSERT INTO qr_codes (original_url, short_code, media_path, qr_type, user_id) 
-                VALUES (:original_url, :short_code, :media_path, :qr_type, :user_id)";
+            VALUES (:original_url, :short_code, :media_path, :qr_type, :user_id)";
 
         $stmt = $this->db->prepare($sql);
-
         return $stmt->execute([
             'original_url' => $content,
             'short_code'   => $shortCode,
             'media_path'   => $filePath,
             'qr_type'      => $type,
             'user_id'      => $userId
+        ]);
+    }
+
+    public function registerScan(int $qrId, string $ip, string $userAgent): bool {
+        $sql = "INSERT INTO scans (qr_code_id, ip_address, user_agent, scanned_at) 
+            VALUES (:qr_id, :ip, :ua, NOW())";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'qr_id' => $qrId,
+            'ip'    => $ip,
+            'ua'    => $userAgent
         ]);
     }
 

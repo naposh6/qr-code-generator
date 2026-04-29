@@ -67,6 +67,10 @@ if ($path === '/login' || $path === '/register') {
     $userController = new UserController();
     $userController->updatePassword();
 
+} elseif ($path === '/profile/update-avatar') {
+    $userController = new UserController();
+    $userController->updateAvatar();
+
 // Маршрути адмін-панелі
 }  elseif ($path === '/admin') {
     $admin = new AdminController();

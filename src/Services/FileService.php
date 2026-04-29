@@ -7,8 +7,28 @@ class FileService {
     private const BASE_UPLOAD_DIR = __DIR__ . '/../../public/uploads/';
 
     public function upload(array $file, string $type): string {
+
+        $maxSize = 10 * 1024 * 1024;
+
+        if ($file['size'] > $maxSize) {
+            throw new \Exception("Файл занадто великий. Максимум 10 МБ.");
+        }
+
         if ($file['error'] !== UPLOAD_ERR_OK) {
             throw new Exception("Помилка завантаження: " . $file['error']);
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($file['tmp_name']);
+
+        $allowedMimes = [
+            'image' => ['image/jpeg', 'image/png', 'image/gif'],
+            'video' => ['video/mp4', 'video/quicktime']
+        ];
+
+        $checkGroup = ($type === 'video') ? 'video' : 'image';
+        if (!in_array($mimeType, $allowedMimes[$checkGroup])) {
+            throw new Exception("Недопустимий контент файлу ($mimeType).");
         }
 
         $extention = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -37,7 +57,7 @@ class FileService {
         $fullPath = __DIR__ . '/../../public/' . $relativePath;
 
         if (file_exists($fullPath) && is_file($fullPath)) {
-            return unlink($fullPath); // Видаляємо файл
+            return unlink($fullPath);
         }
 
         return false;

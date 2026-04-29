@@ -60,18 +60,15 @@ if (!isset($recentQrs)) {
 
     <?php if (!empty($recentQrs)): ?>
         <div class="card" style="margin-top: 40px; border-top: 1px solid #f5f5f7;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="margin: 0;">Ваші останні генерації</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px;">
+                <h3 style="margin: 0; font-weight: 600;">Ваші останні генерації</h3>
 
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <button id="delete-selected"
-                            style="display: none; align-items: center; gap: 6px; color: #ff3b30; background: #fff5f5; border: 1px solid rgba(255, 59, 48, 0.2); padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; width: auto;">
+                    <button id="delete-selected" class="apple-link" style="display: none; color: #ff3b30; background: rgba(255, 59, 48, 0.1); border: none; padding: 8px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
                         🗑 Видалити (<span id="selected-count">0</span>)
                     </button>
 
-                    <a href="/QR-code generator/public/profile"
-                       class="apple-link"
-                       style="font-size: 13px; font-weight: 500; color: #0071e3; text-decoration: none; white-space: nowrap;">
+                    <a href="/QR-code generator/public/profile" class="apple-link" style="font-size: 13px; font-weight: 500; color: #0071e3; text-decoration: none;">
                         Вся історія →
                     </a>
                 </div>
@@ -79,37 +76,70 @@ if (!isset($recentQrs)) {
 
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                <tr style="border-bottom: 1px solid #f5f5f7; text-align: left;">
-                    <th style="padding: 14px 0; width: 40px; text-align: center;">
-                        <input type="checkbox" id="selectAll" style="width: 16px; height: 16px; cursor: pointer;">
+                <tr style="border-bottom: 1px solid #d2d2d7; text-align: left; color: #86868b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <th style="padding: 15px 10px; width: 40px; text-align: center;">
+                        <input type="checkbox" id="selectAll" style="width: 18px; height: 18px; cursor: pointer;">
                     </th>
-                    <th style="padding: 14px 0; font-size: 12px; color: #86868b; width: 80px;">ТИП</th>
-                    <th style="padding: 14px 0; font-size: 12px; color: #86868b;">ВМІСТ</th>
-                    <th style="padding: 14px 0; text-align: right; font-size: 12px; color: #86868b; width: 150px;">ДІЇ</th>
+                    <th style="padding: 15px 10px; width: 80px;">Тип</th>
+                    <th style="padding: 15px 10px;">Вміст та QR</th>
+                    <th style="padding: 15px 10px; width: 140px;">Дата</th>
+                    <th style="padding: 15px 10px; text-align: right; width: 120px;">Дії</th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php foreach ($recentQrs as $qr): ?>
-                    <tr style="border-bottom: 1px solid #f5f5f7;">
-                        <td style="padding: 14px 0; text-align: center;">
-                            <input type="checkbox" class="qr-checkbox" value="<?= $qr['id'] ?>" style="width: 16px; height: 16px; cursor: pointer;">
+                    <tr style="border-bottom: 1px solid #f5f5f7; transition: background 0.2s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='transparent'">
+                        <td style="padding: 12px 10px; text-align: center;">
+                            <input type="checkbox" class="qr-checkbox" value="<?= $qr['id'] ?>" style="width: 18px; height: 18px; cursor: pointer;">
                         </td>
-                        <td style="padding: 14px 0;">
-                            <span class="badge" style="font-size: 10px; padding: 4px 8px;"><?= strtoupper($qr['qr_type']) ?></span>
+                        <td style="padding: 12px 10px;">
+                    <span class="badge" style="background: #e8e8ed; color: #1d1d1f; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px;">
+                        <?= strtoupper($qr['qr_type']) ?>
+                    </span>
                         </td>
-                        <td style="padding: 14px 0; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; color: #424245;">
-                            <?= htmlspecialchars($qr['original_url']) ?>
+
+                        <td style="padding: 12px 10px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="position: relative; width: 44px; height: 44px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 8px; border: 1px solid #d2d2d7; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                                    <img src="/QR-code generator/public/<?= htmlspecialchars($qr['media_path']) ?>"
+                                         style="width: 100%; height: 100%; border-radius: 4px; object-fit: contain;"
+                                         alt="QR Mini">
+
+                                    <div style="position: absolute; bottom: -4px; right: -4px; background: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 1px solid #d2d2d7; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                        <?php if ($qr['qr_type'] === 'image'): ?>🖼️
+                                        <?php elseif ($qr['qr_type'] === 'video'): ?>🎥
+                                        <?php else: ?>🔗
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <div style="overflow: hidden; max-width: 250px;">
+                                    <div style="font-weight: 600; font-size: 13px; color: #1d1d1f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        <?= htmlspecialchars(basename($qr['original_url'])) ?>
+                                    </div>
+                                    <div style="font-size: 11px; color: #0071e3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        <?= htmlspecialchars($qr['original_url']) ?>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
-                        <td style="padding: 14px 0; text-align: right;">
-                            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
-                                <button class="view-qr-btn"
-                                        style="font-size: 12px; background: #0071e3; color: white; border: none; cursor: pointer; padding: 6px 12px; border-radius: 15px; font-weight: 500; width: auto;"
+
+                        <td style="padding: 12px 10px; color: #86868b; font-size: 13px; white-space: nowrap;">
+                            <?= isset($qr['created_at']) ? date('d.m.Y', strtotime($qr['created_at'])) : '—' ?>
+                            <div style="font-size: 10px; opacity: 0.7; margin-top: 2px;"><?= isset($qr['created_at']) ? date('H:i', strtotime($qr['created_at'])) : '' ?></div>
+                        </td>
+
+                        <td style="padding: 12px 10px; text-align: right;">
+                            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
+                                <button class="apple-link view-qr-btn"
+                                        style="background: #f5f5f7; border: none; padding: 6px 12px; border-radius: 20px; color: #0071e3; cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s;"
                                         data-path="<?= htmlspecialchars($qr['media_path'] ?? '') ?>"
                                         data-content="<?= htmlspecialchars($qr['original_url']) ?>">
                                     Переглянути
                                 </button>
                                 <button class="delete-qr-btn" data-id="<?= $qr['id'] ?>"
-                                        style="background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 22px; line-height: 1; padding: 0 5px; width: auto;"
+                                        style="background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 24px; line-height: 1; padding: 0 5px; opacity: 0.6; transition: opacity 0.2s;"
+                                        onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"
                                         title="Видалити">&times;</button>
                             </div>
                         </td>
@@ -224,6 +254,21 @@ if (!isset($recentQrs)) {
                 sendDeleteRequest(ids);
             }
         });
+    });
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const fileInput = document.querySelector('input[name="qr_file"]');
+        const type = document.getElementById('typeSelect').value;
+
+        if ((type === 'image' || type === 'video') && fileInput.files.length > 0) {
+            const fileSize = fileInput.files[0].size / 1024 / 1024; // в МБ
+            const limit = 20;
+
+            if (fileSize > limit) {
+                e.preventDefault();
+                alert(`Файл занадто великий (${fileSize.toFixed(2)} МБ). Максимум: ${limit} МБ.`);
+            }
+        }
     });
 </script>
 </body>

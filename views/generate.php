@@ -18,6 +18,10 @@ $qrImageBase64 = '';
 $displayContent = '';
 
 try {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && empty($_FILES) && $_SERVER['CONTENT_LENGTH'] > 0) {
+        throw new Exception("Файл занадто великий для сервера. Максимальний ліміт: " . ini_get('upload_max_filesize'));
+    }
+
     $finalData = '';
 
     if ($type === 'image' || $type === 'video') {

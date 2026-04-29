@@ -52,4 +52,12 @@ class UserRepository {
         $stmt->bindValue(':id', $userId, \PDO::PARAM_INT);
         return $stmt->execute();
     }
+
+    public function updateAvatar(int $userId, string $path): bool {
+        $sql = "UPDATE users SET avatar_path = :path WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':path', $path);
+        $stmt->bindValue(':id', $userId, \PDO::PARAM_INT);
+        return $stmt->execute();
+    }
 }

@@ -3,6 +3,8 @@ namespace App\Controllers;
 
 use App\Repositories\UserRepository;
 use App\Repositories\QrRepository;
+use App\Services\FileService;
+use App\Core\Database;
 
 class UserController {
     private $userRepo;
@@ -86,6 +88,32 @@ class UserController {
                 exit;
             } else {
                 header("Location: /QR-code generator/public/profile?error=invalid_password");
+                exit;
+            }
+        }
+    }
+
+    public function updateAvatar() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
+            try {
+                $fileService = new FileService();
+                $userId = $_SESSION['user_id'];
+
+                $userEmail = $_SESSION['user_email'];
+                $user = $this->userRepo->findByEmail($userEmail);
+
+                $newPath = $fileService->upload($_FILES['avatar'], 'avatar');
+
+                if (!empty($user['avatar_path'])) {
+                    $fileService->deleteFile($user['avatar_path']);
+                }
+
+                $this->userRepo->updateAvatar($userId, $newPath);
+
+                header("Location: /QR-code generator/public/profile?success=1");
+                exit;
+            } catch (\Exception $e) {
+                header("Location: /QR-code generator/public/profile?error=" . urlencode($e->getMessage()));
                 exit;
             }
         }
