@@ -4,11 +4,13 @@ namespace App\Controllers;
 use App\Repositories\UserRepository;
 use App\Repositories\QrRepository;
 use App\Services\FileService;
+use App\Services\QrDeletionService;
 use App\Core\Database;
 
 class UserController {
     private $userRepo;
     private $qrRepo;
+    private $qrDeletionService;
 
     public function __construct() {
         if (!isset($_SESSION['user_id'])) {
@@ -17,6 +19,7 @@ class UserController {
         }
         $this->userRepo = new UserRepository();
         $this->qrRepo = new QrRepository();
+        $this->qrDeletionService = new QrDeletionService();
     }
 
     public function profile() {
@@ -47,18 +50,7 @@ class UserController {
             if ($qr && (int)$qr['user_id'] === (int)$currentUserId) {
                 $allowedIds[] = (int)$id;
 
-                if (!empty($qr['media_path'])) {
-                    $fullPathQr = __DIR__ . '/../../public/' . $qr['media_path'];
-                    if (file_exists($fullPathQr)) unlink($fullPathQr);
-                }
-
-                if (in_array($qr['qr_type'], ['image', 'video'])) {
-                    $parts = explode('/public/', $qr['original_url']);
-                    if (isset($parts[1])) {
-                        $fullPathMedia = __DIR__ . '/../../public/' . $parts[1];
-                        if (file_exists($fullPathMedia)) unlink($fullPathMedia);
-                    }
-                }
+                $this->qrDeletionService->deleteQrFiles($qr);
             }
         }
 
