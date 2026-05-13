@@ -10,6 +10,7 @@ require_once __DIR__ . '/../src/Core/Autoloader.php';
 
 use App\Core\Autoloader;
 use App\Core\Database;
+use App\Core\Router;
 use App\Controllers\AuthController;
 use App\Controllers\AdminController;
 use App\Controllers\UserController;
@@ -36,110 +37,60 @@ try {
     die("Критична помилка бази даних: " . $e->getMessage());
 }
 
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$requestUri = urldecode($requestUri);
+$router = new Router();
+$baseDir = $router->getBaseDir();
 
-$scriptName = $_SERVER['SCRIPT_NAME'];
-$baseDir = str_replace('/index.php', '', $scriptName);
-
-$path = substr($requestUri, strlen($baseDir));
-$path = ($path === '' || $path === '/') ? '/' : $path;
-$path = str_replace('/index.php', '', $path);
-$path = ($path === '') ? '/' : $path;
-
-$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$requestPath = urldecode($requestPath);
-$relativePath = str_replace($baseDir, '', $requestPath);
-
-$fullPathToFile = __DIR__ . $relativePath;
-
-if ($relativePath !== '/' && is_file($fullPathToFile)) {
-    $mimeType = mime_content_type($fullPathToFile);
-    header("Content-Type: $mimeType");
-    readfile($fullPathToFile);
-    exit;
-}
-
-$auth = new AuthController();
-
-// Маршрути авторизації
-if ($path === '/login' || $path === '/register') {
-    if (isset($_SESSION['user_id'])) {
-        header('Location: ' . $baseDir . '/');
-        exit;
-    }
-    if ($path === '/login') $auth->login();
-    else $auth->register();
-
-// Маршрути профілю
-} elseif ($path === '/profile') {
-    $userCtrl = new UserController();
-    $userCtrl->profile();
-
-} elseif ($path === '/profile/update-password') {
-    $userController = new UserController();
-    $userController->updatePassword();
-
-} elseif ($path === '/profile/update-avatar') {
-    $userController = new UserController();
-    $userController->updateAvatar();
-
-// Маршрути адмін-панелі
-}  elseif ($path === '/admin') {
-    $admin = new AdminController();
-    $admin->dashboard();
-
-} elseif ($path === '/admin/get-users-ajax') {
-    $admin = new AdminController();
-    $admin->getUsersAjax();
-
-} elseif ($path === '/admin/get-qrs-ajax') {
-    $admin = new AdminController();
-    $admin->getQrsAjax();
-
-} elseif ($path === '/admin/update-role') {
-    $admin = new AdminController();
-    $admin->updateRole();
-
-} elseif ($path === '/admin/delete-user') {
-    $admin = new AdminController();
-    $admin->deleteUser();
-
-} elseif ($path === '/admin/delete-qrs') {
-    $admin = new AdminController();
-    $admin->deleteQrs();
-
-} elseif ($path === '/delete-qrs') {
-    $user = new UserController();
-    $user->deleteMyQrs();
-
-} elseif ($path === '/') {
+// Головна сторінка
+$router->add('/', function($baseDir) {
     if (!isset($_SESSION['user_id'])) {
         header('Location: ' . $baseDir . '/login');
         exit;
     }
-
     $qrRepo = new QrRepository();
     $recentQrs = $qrRepo->getByUserId($_SESSION['user_id'], 5);
-
     require_once __DIR__ . '/../views/home.php';
+});
 
-} elseif ($path === '/logout') {
-    $auth->logout();
+// Авторизація
+$router->add('/login', function() use ($baseDir) {
+    if (isset($_SESSION['user_id'])) {
+        header('Location: ' . $baseDir . '/');
+        exit;
+    }
+    (new AuthController())->login();
+});
 
-} elseif ($path === '/generate') {
+$router->add('/register', function() use ($baseDir) {
+    if (isset($_SESSION['user_id'])) {
+        header('Location: ' . $baseDir . '/');
+        exit;
+    }
+    (new AuthController())->register();
+});
+
+$router->add('/logout', [AuthController::class, 'logout']);
+
+// Профіль
+$router->add('/profile', [UserController::class, 'profile']);
+$router->add('/profile/update-password', [UserController::class, 'updatePassword']);
+$router->add('/profile/update-avatar', [UserController::class, 'updateAvatar']);
+$router->add('/delete-qrs', [UserController::class, 'deleteMyQrs']);
+
+// Генерація
+$router->add('/generate', function() use ($baseDir) {
     if (!isset($_SESSION['user_id'])) {
         header('Location: login');
         exit;
     }
     require_once __DIR__ . '/../views/generate.php';
+});
 
-} else {
-    http_response_code(404);
-    echo "<h1>404 - Сторінку не знайдено</h1>";
-    echo "<b>DEBUG INFO:</b><br>";
-    echo "Повний запит: " . htmlspecialchars($requestUri) . "<br>";
-    echo "Базова папка: " . htmlspecialchars($baseDir) . "<br>";
-    echo "Очищений шлях: " . htmlspecialchars($path) . "<br>";
-    echo '<a href="' . $baseDir . '/">Повернутися на головну</a>';
-}
+// Адмінка
+$router->add('/admin', [AdminController::class, 'dashboard']);
+$router->add('/admin/get-users-ajax', [AdminController::class, 'getUsersAjax']);
+$router->add('/admin/get-qrs-ajax', [AdminController::class, 'getQrsAjax']);
+$router->add('/admin/update-role', [AdminController::class, 'updateRole']);
+$router->add('/admin/delete-user', [AdminController::class, 'deleteUser']);
+$router->add('/admin/delete-qrs', [AdminController::class, 'deleteQrs']);
+
+$router->run();
