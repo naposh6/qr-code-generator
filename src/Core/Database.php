@@ -9,12 +9,12 @@ class Database {
     private static $instance = null;
     private $connection;
 
-    private function __construct() {
-        $host = "localhost";
-        $db = 'qr_project_db';
-        $user = 'root';
-        $pass = '';
-        $charset = 'utf8mb4';
+    private function __construct(array $config) {
+        $host = $config['DB_HOST'] ?? 'localhost';
+        $db   = $config['DB_NAME'] ?? 'qr_project_db';
+        $user = $config['DB_USER'] ?? 'root';
+        $pass = $config['DB_PASS'] ?? '';
+        $charset = $config['DB_CHARSET'] ?? 'utf8mb4';
 
         $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
         $options = [
@@ -32,9 +32,9 @@ class Database {
 
     private function __clone() {}
 
-    public static function getInstance() {
+    public static function getInstance(array $config = []) {
         if (self::$instance === null) {
-            self::$instance = new self();
+            self::$instance = new self($config);
         }
         return self::$instance;
     }

@@ -17,8 +17,21 @@ use App\Repositories\QrRepository;
 
 Autoloader::register();
 
+if (file_exists(__DIR__ . '/../.env')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+    $config = $dotenv->load();
+} else {
+    $config = [
+        'DB_HOST' => 'localhost',
+        'DB_NAME' => 'qr_project_db',
+        'DB_USER' => 'root',
+        'DB_PASS' => '',
+        'DB_CHARSET' => 'utf8mb4'
+    ];
+}
+
 try {
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance($config)->getConnection();
 } catch (\Exception $e) {
     die("Критична помилка бази даних: " . $e->getMessage());
 }
