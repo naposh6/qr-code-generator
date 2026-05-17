@@ -10,7 +10,7 @@ use Endroid\QrCode\RoundBlockSizeMode;
 
 class QrGeneratorService {
 
-    public function generate(QrContentInterface $qrContent, string $savePath = null, array $options = []): string {
+   public function generate(QrContentInterface $qrContent, ?string $savePath = null, array $options = []): string {
         $size = (int)($options['size'] ?? 400);
         $rgb = $this->hexToRgb($options['color'] ?? '#000000');
         $bgRgb = $this->hexToRgb($options['bg_color'] ?? '#ffffff');
@@ -98,10 +98,24 @@ class QrGeneratorService {
         return 'data:image/png;base64,' . base64_encode($imageData);
     }
 
-    private function hexToRgb($hex) {
-        $hex = ltrim($hex, '#');
-        if (strlen($hex) == 3) $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
-        list($r, $g, $b) = sscanf($hex, "%02x%02x%02x");
-        return ['r' => $r ?? 0, 'g' => $g ?? 0, 'b' => $b ?? 0];
+ private function hexToRgb(string $hex): array {
+    $hex = ltrim($hex, '#');
+
+    if (strlen($hex) !== 3 && strlen($hex) !== 6) {
+        return ['r' => 0, 'g' => 0, 'b' => 0];
     }
+
+    if (strlen($hex) === 3) {
+        $hex = $hex[0] . $hex[0]
+             . $hex[1] . $hex[1]
+             . $hex[2] . $hex[2];
+    }
+
+    [$r, $g, $b] = sscanf($hex, '%02x%02x%02x');
+
+    return [
+        'r' => $r ?? 0,
+        'g' => $g ?? 0,
+        'b' => $b ?? 0,
+    ];
 }
