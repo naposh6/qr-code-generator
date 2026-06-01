@@ -36,7 +36,6 @@ try {
     $factoryData = null;
     $title       = $_POST['title'] ?? null;
 
-    // ── Customisation options ──────────────────────────────────────────────
     $options = [
         'color'      => $_POST['qr_color']    ?? '#000000',
         'bg_color'   => $_POST['bg_color']    ?? '#ffffff',
@@ -48,13 +47,11 @@ try {
         'logo_path'  => null,
     ];
 
-    // ── Logo upload ────────────────────────────────────────────────────────
     if (isset($_FILES['qr_logo']) && $_FILES['qr_logo']['error'] === UPLOAD_ERR_OK) {
         $uploadedLogo         = $fileService->upload($_FILES['qr_logo'], 'image');
         $options['logo_path'] = __DIR__ . '/../public/' . $uploadedLogo;
     }
 
-    // ── Content parsing ────────────────────────────────────────────────────
     if (in_array($type, ['image', 'video'])) {
         if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] !== UPLOAD_ERR_OK) {
             throw new \Exception("Будь ласка, завантажте файл.");
@@ -100,7 +97,6 @@ try {
 
     $qrContent = QrContentFactory::create($type, $factoryData ?? $finalData);
 
-    // ── Save paths ─────────────────────────────────────────────────────────
     $fileName     = 'qr_' . uniqid() . '.png';
     $relativePath = 'uploads/qr/' . $fileName;
     $fullSavePath = __DIR__ . '/../public/' . $relativePath;
@@ -109,7 +105,6 @@ try {
         mkdir(dirname($fullSavePath), 0777, true);
     }
 
-    // ── Generate ───────────────────────────────────────────────────────────
     $result = $qrService->generate($qrContent, $fullSavePath, $options);
 
     $qrRepo->save($type, $finalData, $userId ? (int)$userId : null, $relativePath, $title);
@@ -117,8 +112,8 @@ try {
     echo json_encode([
         'success'    => true,
         'media_path' => $relativePath,
-        'svg'        => $result['svg'],          // for live preview in browser
-        'png_uri'    => $result['png_data_uri'], // for direct download fallback
+        'svg'        => $result['svg'],
+        'png_uri'    => $result['png_data_uri'],
     ]);
     exit;
 

@@ -43,7 +43,6 @@ if (!isset($recentQrs)) {
         .pagination-btn:hover:not(:disabled) { background: #e8e8ed; }
         .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* ── Step 2 styles ── */
         .color-combo {
             display: flex; align-items: center; gap: 8px; margin-top: 6px;
         }
@@ -129,7 +128,6 @@ if (!isset($recentQrs)) {
 
         <form id="ajaxQrForm" enctype="multipart/form-data">
 
-            <!-- ═══════════════════════ STEP 1 ═══════════════════════ -->
             <div id="step-1-content" class="step-section">
                 <label class="field-section-title" style="display: block; margin-bottom: 15px; font-weight: 600; color: #86868b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Оберіть тип вмісту</label>
 
@@ -205,15 +203,10 @@ if (!isset($recentQrs)) {
                 <button type="button" onclick="goToStep(2)">Продовжити</button>
             </div>
 
-            <!-- ═══════════════════════ STEP 2 ═══════════════════════ -->
             <div id="step-2-content" class="step-section" style="display: none;">
 
                 <div id="step2-layout" style="display: grid; grid-template-columns: 1fr 180px; gap: 20px; align-items: start;">
-
-                    <!-- Left: controls -->
                     <div>
-
-                        <!-- Colours -->
                         <div class="custom-section">
                             <div class="custom-section-title">Кольори</div>
                             <div class="custom-grid-2">
@@ -234,7 +227,6 @@ if (!isset($recentQrs)) {
                             </div>
                         </div>
 
-                        <!-- Dot style -->
                         <div class="custom-section">
                             <div class="custom-section-title">Форма точок даних</div>
                             <div class="style-picker" id="dotStylePicker">
@@ -286,7 +278,6 @@ if (!isset($recentQrs)) {
                             </div>
                         </div>
 
-                        <!-- Eye outer style -->
                         <div class="custom-section">
                             <div class="custom-section-title">Форма рамки очей (зовнішня)</div>
                             <div class="style-picker" id="eyeOuterPicker">
@@ -318,7 +309,6 @@ if (!isset($recentQrs)) {
                             </div>
                         </div>
 
-                        <!-- Eye inner style -->
                         <div class="custom-section">
                             <div class="custom-section-title">Форма ядра очей (внутрішня)</div>
                             <div class="style-picker" id="eyeInnerPicker">
@@ -344,7 +334,6 @@ if (!isset($recentQrs)) {
                             </div>
                         </div>
 
-                        <!-- Extra settings -->
                         <div class="custom-section">
                             <div class="custom-section-title">Додатково</div>
                             <div class="custom-grid-2">
@@ -373,9 +362,8 @@ if (!isset($recentQrs)) {
                             </div>
                         </div>
 
-                    </div><!-- /left -->
+                    </div>
 
-                    <!-- Right: live preview -->
                     <div id="livePreviewCol" style="position: sticky; top: 100px; text-align: center;">
                         <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin-bottom: 10px;">Попередній перегляд</div>
                         <div id="livePreviewBox">
@@ -390,16 +378,15 @@ if (!isset($recentQrs)) {
                         </div>
                     </div>
 
-                </div><!-- /step2-layout grid -->
+                </div>
 
                 <div style="display: flex; gap: 12px; margin-top: 20px;">
                     <button type="button" onclick="goToStep(1)" style="background: var(--surface-2); color: var(--text); width: 35%;">← Назад</button>
                     <button type="submit" style="width: 65%;">Згенерувати QR-код</button>
                 </div>
 
-            </div><!-- /step-2 -->
+            </div>
 
-            <!-- ═══════════════════════ STEP 3 ═══════════════════════ -->
             <div id="step-3-content" class="step-section" style="display: none; text-align: center; padding: 20px 0;">
 
                 <div id="qrLoader">
@@ -408,9 +395,8 @@ if (!isset($recentQrs)) {
                 </div>
 
                 <div id="qrResult" style="display: none;">
-                    <h3 style="margin: 0 0 20px 0; font-weight: 600;">Готово до використання ✓</h3>
+                    <h3 style="margin: 0 0 20px 0; font-weight: 600;">Готово до використання</h3>
 
-                    <!-- SVG preview (vector) -->
                     <div class="result-preview-box" style="background:#fff; padding:16px; border-radius:18px; display:inline-block; box-shadow: var(--shadow-md); border:1px solid var(--border-solid); margin-bottom:24px;">
                         <div id="generatedQrSvgWrap" style="width:240px;height:240px;display:flex;align-items:center;justify-content:center;overflow:hidden;"></div>
                     </div>
@@ -438,12 +424,11 @@ if (!isset($recentQrs)) {
                     </div>
                 </div>
 
-            </div><!-- /step-3 -->
+            </div>
 
         </form>
     </div>
 
-    <!-- ═══════════════════════ HISTORY ═══════════════════════ -->
     <div class="card recent-qrs-card" style="margin-top: 30px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
             <div>
@@ -482,7 +467,6 @@ if (!isset($recentQrs)) {
     </div>
 </div>
 
-<!-- ═══════════════════════ MODAL ═══════════════════════ -->
 <div id="qrModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: center; justify-content: center;">
     <div class="card" style="max-width: 400px; text-align:center; padding: 30px; position: relative; margin: 0 auto;">
         <span id="closeModal" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:24px; color: #86868b;">&times;</span>
@@ -501,9 +485,6 @@ if (!isset($recentQrs)) {
 </div>
 
 <script>
-    // ════════════════════════════════════════════════════════
-    //  GLOBALS
-    // ════════════════════════════════════════════════════════
     const baseAppPath = '/QR-code generator/public/';
     let currentPage = 1;
     let totalItems  = 0;
@@ -512,12 +493,8 @@ if (!isset($recentQrs)) {
     const historyContainer  = document.getElementById('history-container');
     const paginationWrapper = document.getElementById('pagination-wrapper');
 
-    // Stores the last generated SVG string for SVG-download button
     let _lastSvg = '';
 
-    // ════════════════════════════════════════════════════════
-    //  STEPPER
-    // ════════════════════════════════════════════════════════
     function goToStep(stepNum) {
         document.querySelectorAll('.step-section').forEach(el => el.style.display = 'none');
         document.getElementById('step-' + stepNum + '-content').style.display = 'block';
@@ -529,7 +506,6 @@ if (!isset($recentQrs)) {
 
     function resetGenerator() {
         document.getElementById('ajaxQrForm').reset();
-        // Reset type cards
         document.querySelectorAll('.content-type-card').forEach(c => {
             c.style.border = '1px solid #d2d2d7';
             c.style.background = 'transparent';
@@ -541,13 +517,11 @@ if (!isset($recentQrs)) {
         }
         document.getElementById('hiddenTypeInput').value = 'url';
         handleTypeChange('url');
-        // Reset style pickers back to "square" selected
         document.querySelectorAll('.style-picker').forEach(picker => {
             picker.querySelectorAll('.style-option').forEach(opt => opt.classList.remove('selected'));
             const first = picker.querySelector('.style-option');
             if (first) first.classList.add('selected');
         });
-        // Reset color pickers
         document.getElementById('fgColorPicker').value = '#000000';
         document.getElementById('fgColorHex').value    = '#000000';
         document.getElementById('bgColorPicker').value = '#ffffff';
@@ -560,9 +534,6 @@ if (!isset($recentQrs)) {
         goToStep(1);
     }
 
-    // ════════════════════════════════════════════════════════
-    //  TYPE CARDS (step 1)
-    // ════════════════════════════════════════════════════════
     document.querySelectorAll('.content-type-card').forEach(card => {
         card.addEventListener('click', function () {
             document.querySelectorAll('.content-type-card').forEach(c => {
@@ -616,9 +587,6 @@ if (!isset($recentQrs)) {
         }
     }
 
-    // ════════════════════════════════════════════════════════
-    //  STYLE PICKERS (step 2) — radio groups
-    // ════════════════════════════════════════════════════════
     function initStylePicker(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -634,14 +602,10 @@ if (!isset($recentQrs)) {
     initStylePicker('eyeOuterPicker');
     initStylePicker('eyeInnerPicker');
 
-    // Also trigger preview on size/margin/logo changes
     document.querySelectorAll('select[name="qr_size"], select[name="margin"]').forEach(el => {
         el.addEventListener('change', scheduleLivePreview);
     });
 
-    // ════════════════════════════════════════════════════════
-    //  COLOR PICKERS — swatch <-> hex sync
-    // ════════════════════════════════════════════════════════
     function initColorSync(pickerId, hexId) {
         const picker = document.getElementById(pickerId);
         const hex    = document.getElementById(hexId);
@@ -656,9 +620,6 @@ if (!isset($recentQrs)) {
     initColorSync('fgColorPicker', 'fgColorHex');
     initColorSync('bgColorPicker', 'bgColorHex');
 
-    // ════════════════════════════════════════════════════════
-    //  LIVE PREVIEW — JS SVG renderer (mirrors PHP logic)
-    // ════════════════════════════════════════════════════════
     let _previewTimer = null;
     function scheduleLivePreview() {
         clearTimeout(_previewTimer);
@@ -672,10 +633,10 @@ if (!isset($recentQrs)) {
         const eyeOuter = (document.querySelector('input[name="eye_outer"]:checked') || {}).value || 'square';
         const eyeInner = (document.querySelector('input[name="eye_inner"]:checked') || {}).value || 'square';
 
-        const n    = 21;   // fixed fake QR v1 size
+        const n    = 21;
         const size = 120;
         const cs   = size / (n + 2);
-        const off  = cs;   // 1-module margin
+        const off  = cs;
 
         const matrix = makeFakeMatrix(n);
         const eps    = [[0,0],[0,n-7],[n-7,0]];
@@ -710,7 +671,6 @@ if (!isset($recentQrs)) {
         if (boxEl) boxEl.style.background = bgColor;
     }
 
-    // ─── Fake QR matrix ───────────────────────────────────
     function makeFakeMatrix(n) {
         const m = Array.from({length: n}, () => Array(n).fill(false));
         [[0,0],[0,n-7],[n-7,0]].forEach(function(pos) {
@@ -730,7 +690,6 @@ if (!isset($recentQrs)) {
         return m;
     }
 
-    // ─── Eye helpers ──────────────────────────────────────
     function getEyeRole(row, col, n, eps) {
         for (var i = 0; i < eps.length; i++) {
             var er = eps[i][0], ec = eps[i][1];
@@ -748,7 +707,6 @@ if (!isset($recentQrs)) {
         return eps.some(function(p) { return row===p[0]+2 && col===p[1]+2; });
     }
 
-    // ─── SVG shape builders ───────────────────────────────
     function svgDot(x, y, cs, style, color) {
         var pad = cs*0.08, x2=x+pad, y2=y+pad, s=cs-pad*2, cx=x+cs/2, cy=y+cs/2, r=s/2;
         if (style==='circle')   return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+color+'"/>';
@@ -775,12 +733,8 @@ if (!isset($recentQrs)) {
         return '<rect x="'+x+'" y="'+y+'" width="'+size+'" height="'+size+'" fill="'+color+'"/>';
     }
 
-    // Start the preview once on load
     buildLivePreview();
 
-    // ════════════════════════════════════════════════════════
-    //  FORM SUBMIT → GENERATE
-    // ════════════════════════════════════════════════════════
     document.getElementById('ajaxQrForm').addEventListener('submit', function(e) {
         e.preventDefault();
         goToStep(3);
@@ -797,7 +751,6 @@ if (!isset($recentQrs)) {
                     document.getElementById('qrLoader').style.display = 'none';
                     document.getElementById('qrResult').style.display = 'block';
 
-                    // ── SVG preview ──
                     var svgWrap = document.getElementById('generatedQrSvgWrap');
                     if (data.svg) {
                         _lastSvg = data.svg;
@@ -805,11 +758,9 @@ if (!isset($recentQrs)) {
                         var svgEl = svgWrap.querySelector('svg');
                         if (svgEl) { svgEl.style.width = '240px'; svgEl.style.height = '240px'; }
                     } else {
-                        // Fallback: show PNG thumbnail if no SVG
                         svgWrap.innerHTML = '<img src="' + baseAppPath + data.media_path + '" style="width:240px;height:240px;object-fit:contain;">';
                     }
 
-                    // ── SVG download ──
                     document.getElementById('downloadSvgBtn').onclick = function() {
                         if (!_lastSvg) { alert('SVG недоступний'); return; }
                         var blob = new Blob([_lastSvg], {type: 'image/svg+xml'});
@@ -819,11 +770,9 @@ if (!isset($recentQrs)) {
                         setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                     };
 
-                    // ── PNG download ──
                     var pngHref = data.png_uri || (baseAppPath + data.media_path);
                     document.getElementById('downloadPngBtn').href = pngHref;
 
-                    // ── Label / link ──
                     var type = document.getElementById('hiddenTypeInput').value;
                     var displayLink  = document.getElementById('resultDisplayLink');
                     var displayLabel = document.getElementById('resultDisplayLabel');
@@ -856,9 +805,6 @@ if (!isset($recentQrs)) {
             });
     });
 
-    // ════════════════════════════════════════════════════════
-    //  HISTORY — load, pagination, search
-    // ════════════════════════════════════════════════════════
     function loadHistory(page, search) {
         page   = page   || 1;
         search = search || '';
@@ -962,9 +908,6 @@ if (!isset($recentQrs)) {
 
     loadHistory(1, '');
 
-    // ════════════════════════════════════════════════════════
-    //  BULK DELETE + MODAL
-    // ════════════════════════════════════════════════════════
     function updateBulkButton() {
         var sel    = document.querySelectorAll('.qr-checkbox:checked').length;
         var btn    = document.getElementById('delete-selected');
@@ -1002,7 +945,6 @@ if (!isset($recentQrs)) {
         }
     });
 
-    // ── Modal ──────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function() {
         var modal           = document.getElementById('qrModal');
         var modalImg        = document.getElementById('modalImg');
