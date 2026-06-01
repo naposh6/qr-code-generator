@@ -1,141 +1,110 @@
 <?php
 
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 use App\Factories\QrContentFactory;
 use App\Services\QrGeneratorService;
 use App\Services\FileService;
 use App\Repositories\QrRepository;
 
+while (ob_get_level()) {
+    ob_end_clean();
+}
+
+header('Content-Type: application/json; charset=utf-8');
+
 $type = $_POST['type'] ?? 'url';
 $content = $_POST['content'] ?? '';
 $userId = $_SESSION['user_id'] ?? null;
 
-$qrService = new QrGeneratorService();
-$fileService = new FileService();
-$qrRepo = new QrRepository();
-
-$error = null;
-$qrImageBase64 = '';
-$displayContent = '';
+if (!$userId) {
+    echo json_encode(['success' => false, 'message' => 'Сесія закінчилася. Будь ласка, авторизуйтесь знову.']);
+    exit;
+}
 
 try {
+    $qrService = new QrGeneratorService();
+    $fileService = new FileService();
+    $qrRepo = new QrRepository();
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && empty($_FILES) && $_SERVER['CONTENT_LENGTH'] > 0) {
-        throw new Exception("Файл занадто великий для сервера. Максимальний ліміт: " . ini_get('upload_max_filesize'));
+        throw new \Exception("Файл занадто великий для сервера.");
     }
 
     $finalData = '';
-
     $title = $_POST['title'] ?? null;
+
     $options = [
             'color' => $_POST['qr_color'] ?? '#000000',
             'bg_color' => $_POST['bg_color'] ?? '#ffffff',
             'size'  => (int)($_POST['qr_size'] ?? 400),
-            'qr_style' => $_POST['qr_style'] ?? 'square', // ДОДАЙ ЦЕ
+            'qr_style' => $_POST['qr_style'] ?? 'square',
             'logo_path' => null
     ];
 
     if (isset($_FILES['qr_logo']) && $_FILES['qr_logo']['error'] === UPLOAD_ERR_OK) {
-        $options['logo_path'] = $_FILES['qr_logo']['tmp_name'];
+        $uploadedLogo = $fileService->upload($_FILES['qr_logo'], 'logo');
+        $options['logo_path'] = __DIR__ . '/../public/' . $uploadedLogo;
     }
 
-    if ($type === 'image' || $type === 'video') {
-        if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] === UPLOAD_ERR_NO_FILE) {
-            throw new Exception("Будь ласка, виберіть файл.");
+    if (in_array($type, ['image', 'video'])) {
+        if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] !== UPLOAD_ERR_OK) {
+            throw new \Exception("Будь ласка, завантажте файл.");
         }
-        $relativePath = $fileService->upload($_FILES['qr_file'], $type);
-
-        $baseUrl = "http://localhost/QR-code generator/public/";
-        $finalData = $baseUrl . $relativePath;
+        $uploadedFilePath = $fileService->upload($_FILES['qr_file'], $type);
+        $finalData = 'http://localhost/QR-code%20generator/public/' . $uploadedFilePath;
+    } elseif ($type === 'pdf') {
+        if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] !== UPLOAD_ERR_OK) {
+            throw new \Exception("Будь ласка, оберіть PDF.");
+        }
+        $uploadedFilePath = $fileService->upload($_FILES['qr_file'], 'image');
+        $finalData = 'http://localhost/QR-code%20generator/public/' . $uploadedFilePath;
+    } elseif ($type === 'wifi') {
+        $ssid = $_POST['wifi_ssid'] ?? '';
+        $pass = $_POST['wifi_password'] ?? '';
+        $finalData = "WIFI:S:{$ssid};T:WPA;P:{$pass};;";
     } else {
-        $finalData = $_POST['content'] ?? '';
-        if (empty(trim($finalData))) {
-            throw new Exception("Контент не може бути порожнім.");
-        }
+        $finalData = $content;
     }
 
-    $qrContent = QrContentFactory::create($type, $finalData);
-    $displayContent = $qrContent->getContent();
-
-    $projectRoot = $_SERVER['DOCUMENT_ROOT'] . '/QR-code generator/public/';
-    $qrDir = 'uploads/qr/';
-
-    if (!is_dir($projectRoot . $qrDir)) {
-        mkdir($projectRoot . $qrDir, 0777, true);
+    if (empty($finalData)) {
+        throw new \Exception("Вміст не може бути порожнім.");
     }
 
-    $fileName = 'qr_img_' . time() . '.png';
-    $fullSavePath = $projectRoot . $qrDir . $fileName;
-    $dbPath = $qrDir . $fileName;
+    $qrContent = QrContentFactory::create($type, $finalData, $_POST);
 
-    $qrImageBase64 = $qrService->generate($qrContent, $fullSavePath, $options);
+    $fileName = 'qr_' . uniqid() . '.png';
+    $relativePath = 'uploads/qr/' . $fileName;
+    $fullSavePath = __DIR__ . '/../public/' . $relativePath;
 
-    if (!empty($qrImageBase64)) {
-        $qrRepo->save(
-                $type,
-                $displayContent,
-                $userId,
-                $dbPath,
-                $title
-        );
+    if (!is_dir(dirname($fullSavePath))) {
+        mkdir(dirname($fullSavePath), 0777, true);
     }
 
-} catch (\Exception $e) {
-    $error = $e->getMessage();
+    $qrService->generate($qrContent, $fullSavePath, $options);
+
+    $qrData = [
+            'user_id' => $userId,
+            'qr_type' => $type,
+            'title' => $title,
+            'original_url' => $finalData,
+            'media_path' => $relativePath,
+            'created_at' => date('Y-m-d H:i:s')
+    ];
+
+    $qrRepo->save($type, $finalData, $userId ? (int)$userId : null, $relativePath, $title);
+
+    echo json_encode([
+            'success' => true,
+            'media_path' => $relativePath
+    ]);
+    exit;
+
+} catch (\Throwable $e) {
+    echo json_encode([
+            'success' => false,
+            'message' => 'PHP Помилка: ' . $e->getMessage() . ' у файлі ' . basename($e->getFile()) . ' на рядку ' . $e->getLine()
+    ]);
+    exit;
 }
-?>
-
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Результат генерації - GenerQR</title>
-    <link rel="stylesheet" href="/QR-code generator/public/css/style.css">
-</head>
-<body>
-<div class="container">
-    <div class="card" style="text-align: center;">
-        <div style="text-align: left; margin-bottom: 20px;">
-            <a href="/QR-code generator/public/" class="apple-link" style="text-decoration: none;">← На головну</a>
-        </div>
-        <h1>Ваш QR-код</h1>
-
-        <?php if (!empty($title)): ?>
-            <h2 style="font-size: 18px; color: #86868b; margin-top: -10px; margin-bottom: 20px; font-weight: 500;">
-                <?= htmlspecialchars($title) ?>
-            </h2>
-        <?php endif; ?>
-
-        <?php if ($error): ?>
-            <div style="color: #e74c3c; margin-bottom: 20px;">
-                <strong>Помилка:</strong> <?= htmlspecialchars($error) ?>
-            </div>
-            <a href="/QR-code generator/public/" class="button-link" style="display: block; text-decoration: none;">
-                <button type="button" style="background-color: #95a5a6;">Спробувати ще раз</button>
-            </a>
-        <?php else: ?>
-            <div class="result-area">
-                <img src="<?= $qrImageBase64 ?>" alt="QR Code" class="result-img" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; background: white;">
-
-                <div style="margin-bottom: 20px; word-break: break-all;">
-                    <p>Вміст коду:</p>
-                    <a href="<?= htmlspecialchars($displayContent) ?>" target="_blank" style="color: #0071e3; text-decoration: none;">
-                        <?= htmlspecialchars($displayContent) ?>
-                    </a>
-                </div>
-
-                <div class="actions">
-                    <a href="<?= $qrImageBase64 ?>" download="qr-code.png" style="text-decoration: none;">
-                        <button type="button" style="background-color: #27ae60; margin-bottom: 10px;">Скачати як PNG</button>
-                    </a>
-
-                    <button onclick="window.print()" style="margin-bottom: 10px;">Друкувати / PDF</button>
-
-                    <a href="/QR-code generator/public/" style="text-decoration: none;">
-                        <button type="button" style="background-color: #95a5a6;">Створити новий</button>
-                    </a>
-                </div>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
-</body>
-</html>

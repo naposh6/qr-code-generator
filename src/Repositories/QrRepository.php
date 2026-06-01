@@ -84,4 +84,26 @@ class QrRepository {
 
         return $stmt->execute($ids);
     }
+
+    public function getByUserIdWithSearch(int $userId, int $limit, int $offset, ?string $search = null): array {
+        $sql = "SELECT * FROM qr_codes WHERE user_id = :user_id";
+
+        if ($search) {
+            $sql .= " AND title LIKE :search";
+        }
+
+        $sql .= " ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        if ($search) {
+            $stmt->bindValue(':search', '%' . $search . '%');
+        }
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

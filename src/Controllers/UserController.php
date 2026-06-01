@@ -110,4 +110,20 @@ class UserController {
             }
         }
     }
+
+    public function getHistoryAjax() {
+        $page = (int)($_GET['page'] ?? 1);
+        $search = $_GET['search'] ?? null;
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+
+        $userId = $_SESSION['user_id'];
+        $qrRepo = new \App\Repositories\QrRepository();
+
+        $qrs = $qrRepo->getByUserIdWithSearch($userId, $limit, $offset, $search);
+
+        header('Content-Type: application/json');
+        echo json_encode($qrs);
+        exit;
+    }
 }

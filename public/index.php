@@ -50,6 +50,7 @@ $router->add('/', function($baseDir) {
     $recentQrs = $qrRepo->getByUserId($_SESSION['user_id'], 5);
     require_once __DIR__ . '/../views/home.php';
 });
+$router->add('/get-history-ajax', [UserController::class, 'getHistoryAjax']);
 
 // Авторизація
 $router->add('/login', function() use ($baseDir) {
