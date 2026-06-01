@@ -5,6 +5,8 @@
     <title>Вхід - GenerQR</title>
     <link rel="stylesheet" href="/QR-code generator/public/css/style.css">
 </head>
+
+<script src="/QR-code generator/public/js/theme.js" defer></script>
 <body>
 <div class="container">
     <div class="card">
