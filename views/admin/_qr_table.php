@@ -1,11 +1,30 @@
 <?php /** @var array $allQrs */ ?>
+
+<script src="/QR-code generator/public/js/theme.js" defer></script>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px;">
+
     <h3 style="margin: 0; font-weight: 600;">Всі генерації системи</h3>
-    <button id="delete-selected" class="apple-link" style="display: none; color: #ff3b30; background: rgba(255, 59, 48, 0.1); border: none; padding: 8px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
-        🗑 Видалити обрані (<span id="selected-count">0</span>)
-    </button>
+
+    <div style="display: flex; align-items: center; gap: 15px;">
+
+        <button id="delete-selected" class="apple-link" style="display: none; color: #ff3b30; background: rgba(255, 59, 48, 0.1); border: none; padding: 8px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+            🗑 Видалити обрані (<span id="selected-count">0</span>)
+        </button>
+
+        <div class="view-controls" style="display: flex; gap: 8px;">
+            <button class="view-btn" onclick="setMode('grid')" style="background: transparent; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center;">
+                <img src="/QR-code generator/src/assets/icons/grid.png" alt="Grid" style="width: 22px; height: 22px; opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
+            </button>
+            <button class="view-btn" onclick="setMode('list')" style="background: transparent; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center;">
+                <img src="/QR-code generator/src/assets/icons/list.png" alt="List" style="width: 22px; height: 22px; opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
+            </button>
+        </div>
+
+    </div>
 </div>
 
+<?php $needsCollapse = count($allQrs) > 6; ?>
+<div id="qr-container" class="<?= $needsCollapse ? 'collapsed fade-out' : '' ?>">
 <table style="width: 100%; border-collapse: collapse;">
     <thead>
     <tr style="border-bottom: 1px solid #d2d2d7; text-align: left; color: #86868b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -83,4 +102,9 @@
         <?php endforeach; ?>
     <?php endif; ?>
     </tbody>
+
 </table>
+</div>
+<div class="expand-wrapper">
+    <button id="toggle-btn" class="btn-expand" onclick="toggleExpand()">Показати всі</button>
+</div>

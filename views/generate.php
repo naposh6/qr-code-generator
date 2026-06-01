@@ -14,9 +14,9 @@ while (ob_get_level()) {
 
 header('Content-Type: application/json; charset=utf-8');
 
-$type = $_POST['type'] ?? 'url';
+$type    = $_POST['type'] ?? 'url';
 $content = $_POST['content'] ?? '';
-$userId = $_SESSION['user_id'] ?? null;
+$userId  = $_SESSION['user_id'] ?? null;
 
 if (!$userId) {
     echo json_encode(['success' => false, 'message' => 'Сесія закінчилася. Будь ласка, авторизуйтесь знову.']);
@@ -24,46 +24,84 @@ if (!$userId) {
 }
 
 try {
-    $qrService = new QrGeneratorService();
+    $qrService   = new QrGeneratorService();
     $fileService = new FileService();
-    $qrRepo = new QrRepository();
+    $qrRepo      = new QrRepository();
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && empty($_FILES) && $_SERVER['CONTENT_LENGTH'] > 0) {
         throw new \Exception("Файл занадто великий для сервера.");
     }
 
-    $finalData = '';
+    $finalData   = '';
+    $factoryData = null;
+
     $title = $_POST['title'] ?? null;
 
     $options = [
-            'color' => $_POST['qr_color'] ?? '#000000',
-            'bg_color' => $_POST['bg_color'] ?? '#ffffff',
-            'size'  => (int)($_POST['qr_size'] ?? 400),
-            'qr_style' => $_POST['qr_style'] ?? 'square',
-            'logo_path' => null
+            'color'     => $_POST['qr_color']  ?? '#000000',
+            'bg_color'  => $_POST['bg_color']  ?? '#ffffff',
+            'size'      => (int)($_POST['qr_size'] ?? 400),
+            'qr_style'  => $_POST['qr_style']  ?? 'square',
+            'logo_path' => null,
     ];
 
     if (isset($_FILES['qr_logo']) && $_FILES['qr_logo']['error'] === UPLOAD_ERR_OK) {
-        $uploadedLogo = $fileService->upload($_FILES['qr_logo'], 'logo');
-        $options['logo_path'] = __DIR__ . '/../public/' . $uploadedLogo;
+        $uploadedLogo          = $fileService->upload($_FILES['qr_logo'], 'image');
+        $options['logo_path']  = __DIR__ . '/../public/' . $uploadedLogo;
     }
 
     if (in_array($type, ['image', 'video'])) {
+
         if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] !== UPLOAD_ERR_OK) {
             throw new \Exception("Будь ласка, завантажте файл.");
         }
         $uploadedFilePath = $fileService->upload($_FILES['qr_file'], $type);
-        $finalData = 'http://localhost/QR-code%20generator/public/' . $uploadedFilePath;
+        $finalData        = 'http://localhost/QR-code%20generator/public/' . $uploadedFilePath;
+
     } elseif ($type === 'pdf') {
+
         if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] !== UPLOAD_ERR_OK) {
             throw new \Exception("Будь ласка, оберіть PDF.");
         }
         $uploadedFilePath = $fileService->upload($_FILES['qr_file'], 'image');
-        $finalData = 'http://localhost/QR-code%20generator/public/' . $uploadedFilePath;
+        $finalData        = 'http://localhost/QR-code%20generator/public/' . $uploadedFilePath;
+
     } elseif ($type === 'wifi') {
-        $ssid = $_POST['wifi_ssid'] ?? '';
+
+        $ssid = trim($_POST['wifi_ssid'] ?? '');
         $pass = $_POST['wifi_password'] ?? '';
-        $finalData = "WIFI:S:{$ssid};T:WPA;P:{$pass};;";
+        $enc  = 'WPA';
+
+        if (empty($ssid)) {
+            throw new \Exception("Введіть назву Wi-Fi мережі (SSID).");
+        }
+
+        $finalData   = "WIFI:T:{$enc};S:{$ssid};P:{$pass};;";
+        $factoryData = json_encode(['ssid' => $ssid, 'password' => $pass, 'encryption' => $enc]);
+
+    } elseif ($type === 'call') {
+
+        $phone = trim($_POST['call_phone'] ?? '');
+
+        if (empty($phone)) {
+            throw new \Exception("Введіть номер телефону.");
+        }
+
+        $finalData   = "tel:{$phone}";
+        $factoryData = json_encode(['phone' => $phone]);
+
+    } elseif ($type === 'vcard') {
+
+        $name  = trim($_POST['vcard_name']  ?? '');
+        $phone = trim($_POST['vcard_phone'] ?? '');
+
+        if (empty($name) || empty($phone)) {
+            throw new \Exception("Заповніть ім'я та номер телефону контакту.");
+        }
+
+        $finalData   = "BEGIN:VCARD\nVERSION:3.0\nFN:{$name}\nTEL:{$phone}\nEND:VCARD";
+        $factoryData = json_encode(['name' => $name, 'phone' => $phone]);
+
     } else {
         $finalData = $content;
     }
@@ -72,9 +110,10 @@ try {
         throw new \Exception("Вміст не може бути порожнім.");
     }
 
-    $qrContent = QrContentFactory::create($type, $finalData, $_POST);
+    $qrContent = QrContentFactory::create($type, $factoryData ?? $finalData);
 
-    $fileName = 'qr_' . uniqid() . '.png';
+
+    $fileName     = 'qr_' . uniqid() . '.png';
     $relativePath = 'uploads/qr/' . $fileName;
     $fullSavePath = __DIR__ . '/../public/' . $relativePath;
 
@@ -84,27 +123,18 @@ try {
 
     $qrService->generate($qrContent, $fullSavePath, $options);
 
-    $qrData = [
-            'user_id' => $userId,
-            'qr_type' => $type,
-            'title' => $title,
-            'original_url' => $finalData,
-            'media_path' => $relativePath,
-            'created_at' => date('Y-m-d H:i:s')
-    ];
-
     $qrRepo->save($type, $finalData, $userId ? (int)$userId : null, $relativePath, $title);
 
     echo json_encode([
-            'success' => true,
-            'media_path' => $relativePath
+            'success'    => true,
+            'media_path' => $relativePath,
     ]);
     exit;
 
 } catch (\Throwable $e) {
     echo json_encode([
             'success' => false,
-            'message' => 'PHP Помилка: ' . $e->getMessage() . ' у файлі ' . basename($e->getFile()) . ' на рядку ' . $e->getLine()
+            'message' => 'PHP Помилка: ' . $e->getMessage() . ' у файлі ' . basename($e->getFile()) . ' на рядку ' . $e->getLine(),
     ]);
     exit;
 }

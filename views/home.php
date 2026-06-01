@@ -44,6 +44,8 @@ if (!isset($recentQrs)) {
         .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
+
+<script src="/QR-code generator/public/js/theme.js" defer></script>
 <body>
 <div class="container">
 
@@ -92,6 +94,12 @@ if (!isset($recentQrs)) {
                     <div class="content-type-card" data-type="pdf" style="border: 1px solid #d2d2d7; padding: 18px 10px; border-radius: 14px; text-align: center; cursor: pointer; transition: all 0.2s;">
                         <span class="type-card-title" style="font-size: 13px; font-weight: 500; display: block;">PDF Документ</span>
                     </div>
+                    <div class="content-type-card" data-type="call" style="border: 1px solid #d2d2d7; padding: 18px 10px; border-radius: 14px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                        <span class="type-card-title" style="font-size: 13px; font-weight: 500; display: block;">Дзвінок</span>
+                    </div>
+                    <div class="content-type-card" data-type="vcard" style="border: 1px solid #d2d2d7; padding: 18px 10px; border-radius: 14px; text-align: center; cursor: pointer; transition: all 0.2s;">
+                        <span class="type-card-title" style="font-size: 13px; font-weight: 500; display: block;">V-Card</span>
+                    </div>
                 </div>
 
                 <input type="hidden" name="type" id="hiddenTypeInput" value="url">
@@ -113,6 +121,21 @@ if (!isset($recentQrs)) {
                         <div class="form-group" style="flex: 1; margin-bottom: 0;">
                             <label>Пароль до мережі</label>
                             <input type="password" name="wifi_password" placeholder="Пароль">
+                        </div>
+                    </div>
+                    <div id="callContentDiv" style="display: none;" class="form-group">
+                        <label>Номер телефону</label>
+                        <input type="text" name="call_phone" id="callPhoneInput" placeholder="+380XXXXXXXXX">
+                    </div>
+
+                    <div id="vcardContentDiv" style="display: none; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Ім'я</label>
+                            <input type="text" name="vcard_name" id="vcardNameInput" placeholder="Ім'я та прізвище">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Телефон</label>
+                            <input type="text" name="vcard_phone" id="vcardPhoneInput" placeholder="+380XXXXXXXXX">
                         </div>
                     </div>
                 </div>
@@ -301,6 +324,15 @@ if (!isset($recentQrs)) {
                         let match = qr.original_url.match(/S:(.*?);/);
                         displaySub = "SSID: " + (match ? match[1] : 'Прихована мережа');
                         icon = '📶';
+                    } else if (qr.qr_type === 'call') {
+                        displayTitle = displayTitle || 'Дзвінок';
+                        displaySub = qr.original_url; // "tel:+380..."
+                        icon = '📞';
+                    } else if (qr.qr_type === 'vcard') {
+                        displayTitle = displayTitle || 'Контакт vCard';
+                        let fnMatch = qr.original_url.match(/FN:(.*)/);
+                        displaySub = fnMatch ? fnMatch[1].trim() : 'Контактна картка';
+                        icon = '👤';
                     } else if (['image', 'video', 'pdf'].includes(qr.qr_type)) {
                         displayTitle = displayTitle || `Медіафайл (${qr.qr_type.toUpperCase()})`;
                         displaySub = shortLink || 'Медіафайл';
@@ -478,13 +510,20 @@ if (!isset($recentQrs)) {
     });
 
     function handleTypeChange(type) {
-        const textDiv = document.getElementById('textContentDiv');
-        const fileDiv = document.getElementById('fileContentDiv');
-        const wifiDiv = document.getElementById('wifiContentDiv');
-        const label = document.getElementById('inputLabel');
+        const textDiv  = document.getElementById('textContentDiv');
+        const fileDiv  = document.getElementById('fileContentDiv');
+        const wifiDiv  = document.getElementById('wifiContentDiv');
+        const callDiv  = document.getElementById('callContentDiv');
+        const vcardDiv = document.getElementById('vcardContentDiv');
+        const label     = document.getElementById('inputLabel');
         const fileLabel = document.getElementById('fileLabel');
 
-        textDiv.style.display = 'none'; fileDiv.style.display = 'none'; wifiDiv.style.display = 'none';
+        // Ховаємо всі блоки
+        textDiv.style.display  = 'none';
+        fileDiv.style.display  = 'none';
+        wifiDiv.style.display  = 'none';
+        callDiv.style.display  = 'none';
+        vcardDiv.style.display = 'none';
 
         if (type === 'url') {
             textDiv.style.display = 'block'; label.innerText = 'Введіть посилання';
@@ -494,6 +533,10 @@ if (!isset($recentQrs)) {
             document.getElementById('mainContentInput').placeholder = 'Ваш текст тут...';
         } else if (type === 'wifi') {
             wifiDiv.style.display = 'flex';
+        } else if (type === 'call') {
+            callDiv.style.display = 'block';
+        } else if (type === 'vcard') {
+            vcardDiv.style.display = 'flex';
         } else if (type === 'image') {
             fileDiv.style.display = 'block'; fileLabel.innerText = 'Оберіть зображення (PNG/JPG)';
             document.getElementById('mainFileInput').accept = 'image/*';
@@ -501,7 +544,7 @@ if (!isset($recentQrs)) {
             fileDiv.style.display = 'block'; fileLabel.innerText = 'Оберіть відеоролик (MP4)';
             document.getElementById('mainFileInput').accept = 'video/*';
         } else if (type === 'pdf') {
-            fileDiv.style.display = 'block'; fileLabel.innerText = 'Оберіть файл конфігурації PDF';
+            fileDiv.style.display = 'block'; fileLabel.innerText = 'Оберіть файл (PDF)';
             document.getElementById('mainFileInput').accept = '.pdf,application/pdf';
         }
     }
@@ -536,6 +579,8 @@ if (!isset($recentQrs)) {
                     if (!targetUrl) {
                         if (type === 'url' || type === 'text') targetUrl = document.getElementById('mainContentInput').value;
                         else if (type === 'wifi') targetUrl = 'SSID: ' + (document.getElementById('wifiSsidInput').value || 'Мережа');
+                        else if (type === 'call')  targetUrl = document.getElementById('callPhoneInput').value;
+                        else if (type === 'vcard') targetUrl = document.getElementById('vcardNameInput').value + ' / ' + document.getElementById('vcardPhoneInput').value;
                     }
 
                     if (type === 'url') {
@@ -548,6 +593,10 @@ if (!isset($recentQrs)) {
                         displayLabel.innerText = 'Вміст QR-коду (текст):'; displayIcon.innerText = '📝';
                     } else if (type === 'wifi') {
                         displayLabel.innerText = 'Дані Wi-Fi мережі:'; displayIcon.innerText = '📶';
+                    } else if (type === 'call') {
+                        displayLabel.innerText = 'Телефонний номер для дзвінка:'; displayIcon.innerText = '📞';
+                    } else if (type === 'vcard') {
+                        displayLabel.innerText = 'Контактна картка vCard:'; displayIcon.innerText = '👤';
                     }
 
                     if (targetUrl) {
@@ -594,6 +643,8 @@ if (!isset($recentQrs)) {
                     else if (qrType === 'pdf') dynamicIcon.innerText = '📄';
                     else if (qrType === 'text') dynamicIcon.innerText = '📝';
                     else if (qrType === 'wifi') dynamicIcon.innerText = '📶';
+                    else if (qrType === 'call') dynamicIcon.innerText = '📞';
+                    else if (qrType === 'vcard') dynamicIcon.innerText = '👤';
                     else dynamicIcon.innerText = '🔗';
                 }
 

@@ -9,6 +9,8 @@
     <title>Адмін-панель</title>
     <link rel="stylesheet" href="/QR-code generator/public/css/style.css">
 </head>
+
+<script src="/QR-code generator/public/js/theme.js" defer></script>
 <body>
 <div class="container">
     <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
@@ -147,6 +149,38 @@
                 .catch(err => console.error('Помилка:', err));
         }
     });
+
+    function setMode(mode) {
+        const container = document.getElementById('qr-container');
+        if (mode === 'grid') {
+            container.classList.add('qr-grid-mode');
+        } else {
+            container.classList.remove('qr-grid-mode');
+        }
+    }
+
+    function toggleExpand() {
+        const container = document.getElementById('qr-container');
+        const btn = document.getElementById('toggle-btn');
+
+        const isCollapsing = !container.classList.contains('collapsed');
+
+        container.classList.toggle('collapsed');
+        container.classList.toggle('fade-out');
+
+        if (container.classList.contains('collapsed')) {
+            btn.innerText = 'Показати всі';
+        } else {
+            btn.innerText = 'Згорнути';
+        }
+
+        if (isCollapsing) {
+            container.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    }
 </script>
 
 <div id="qrModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); align-items: center; justify-content: center;">
