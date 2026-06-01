@@ -216,6 +216,73 @@ button:hover {
     font-weight: 600;
 }
 
+
+#qr-list-container {
+    transition: opacity 0.3s ease-in-out;
+    min-height: 300px;
+}
+
+.fade-in {
+    opacity: 1;
+    animation: fadeIn 0.4s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    margin: 0 3px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #ffffff;
+    color: #0071e3;
+    border-color: rgba(0, 113, 227, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 113, 227, 0.15);
+    transform: translateY(-2px);
+}
+
+.pagination-btn:active:not(:disabled) {
+    transform: scale(0.92) translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 113, 227, 0.1);
+}
+
+.pagination-btn.active {
+    background: #0071e3;
+    color: #242424;
+    border-color: #0071e3;
+    box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+    cursor: default;
+}
+
+.pagination-btn.active:hover {
+    transform: none;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: transparent;
+    border-color: transparent;
+}
+
 @media (max-width: 600px) {
     .card { padding: 20px; }
     h1 { font-size: 24px; }
