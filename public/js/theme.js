@@ -117,17 +117,19 @@
             if (!modalImg || !modalImg.src) return;
 
             const img = new Image();
-            img.crossOrigin = 'anonymous';
+            img.crossOrigin = "Anonymous";
+
             img.onload = function () {
                 const canvas = document.createElement('canvas');
-                const sizeInput = document.getElementById('qr_size');
-                const size = sizeInput ? (parseInt(sizeInput.value) || 400) : 800;
 
-                canvas.width = size;
-                canvas.height = size;
+                const exportSize = 1000;
+                canvas.width = exportSize;
+                canvas.height = exportSize;
+
                 const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, size, size);
-                ctx.drawImage(img, 0, 0, size, size);
+                ctx.clearRect(0, 0, exportSize, exportSize);
+
+                ctx.drawImage(img, 0, 0, exportSize, exportSize);
 
                 const pngUrl = canvas.toDataURL('image/png');
                 const downloadLink = document.createElement('a');

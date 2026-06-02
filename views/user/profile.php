@@ -113,7 +113,7 @@
                                 <td style="padding: 12px 10px;">
                                     <div style="display: flex; align-items: center; gap: 12px;">
                                         <div style="position: relative; width: 44px; height: 44px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 8px; border: 1px solid #d2d2d7; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                                            <img src="/QR-code generator/public/<?= htmlspecialchars($qr['media_path']) ?>"
+                                            <img src="/QR-code generator/public/<?= htmlspecialchars($qr['svg_path'] ?? $qr['media_path']) ?>"
                                                  style="width: 100%; height: 100%; border-radius: 4px; object-fit: contain;"
                                                  alt="Mini QR">
 
@@ -145,7 +145,7 @@
                                     <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
                                         <button class="apple-link view-qr-btn"
                                                 style="background: #f5f5f7; border: none; padding: 6px 12px; border-radius: 20px; color: #0071e3; cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s;"
-                                                data-path="<?= htmlspecialchars($qr['media_path'] ?? '') ?>"
+                                                data-path="<?= htmlspecialchars(str_replace('.png', '.svg', $qr['media_path'] ?? '')) ?>"
                                                 data-content="<?= htmlspecialchars($qr['original_url'] ?? '') ?>">
                                             Переглянути
                                         </button>
@@ -170,160 +170,204 @@
 
             <?php endif; ?>
 
-        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
 
-        <h3>Змінити пароль</h3>
-        <form action="profile/update-password" method="POST">
-            <div class="form-group">
-                <label>Новий пароль</label>
-                <input type="password" name="password" required minlength="6" placeholder="Мінімум 6 символів">
-            </div>
-            <div class="form-group">
-                <label>Підтвердіть пароль</label>
-                <input type="password" name="password_confirm" required>
-            </div>
-            <button type="submit" style="background-color: #34495e;">Оновити пароль</button>
-        </form>
+            <h3>Змінити пароль</h3>
+            <form action="profile/update-password" method="POST">
+                <div class="form-group">
+                    <label>Новий пароль</label>
+                    <input type="password" name="password" required minlength="6" placeholder="Мінімум 6 символів">
+                </div>
+                <div class="form-group">
+                    <label>Підтвердіть пароль</label>
+                    <input type="password" name="password_confirm" required>
+                </div>
+                <button type="submit" style="background-color: #34495e;">Оновити пароль</button>
+            </form>
 
-        <?php if (isset($_GET['success'])): ?>
-            <p style="color: #27ae60; margin-top: 15px;">✔ Дані успішно оновлено!</p>
-        <?php endif; ?>
+            <?php if (isset($_GET['success'])): ?>
+                <p style="color: #27ae60; margin-top: 15px;">✔ Дані успішно оновлено!</p>
+            <?php endif; ?>
+        </div>
     </div>
-</div>
 
-<div id="qrModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); transition: all 0.3s ease;">
-    <div class="card" style="position:relative; margin: 8% auto; max-width: 400px; text-align:center; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
-        <span id="closeModal" style="position:absolute; right:20px; top:10px; cursor:pointer; font-size:28px; color: #86868b;">&times;</span>
-        <h3 id="modalTitle" style="margin-bottom: 20px;">Ваш QR-код</h3>
-        <img id="modalImg" src="" style="max-width:100%; border-radius:12px; border: 1px solid #d2d2d7;">
-        <p id="modalContent" style="word-break: break-all; margin-top: 20px; color: #0071e3; font-size: 14px;"></p>
-        <a id="modalDownload" href="" download="qr-code.png" class="apple-link" style="display: block; margin-top: 20px; background: #0071e3; color: white; padding: 12px; border-radius: 12px; text-decoration: none; font-weight: 600;">
-            Завантажити PNG
-        </a>
+    <div id="qrModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); align-items: center; justify-content: center;">
+        <div class="card" style="position:relative; max-width: 400px; width: 90%; text-align:center; padding: 40px;">
+            <span id="closeModal" style="position:absolute; right:20px; top:10px; cursor:pointer; font-size:28px; color: #86868b;">&times;</span>
+            <h3 style="margin-top: 0;"><span id="modalDynamicIcon">🔗</span> Перегляд QR-коду</h3>
+            <img id="modalImg" src="" style="max-width:100%; border-radius:12px; border: 1px solid #d2d2d7; margin: 20px 0;">
+            <div style="margin-bottom: 20px;">
+                <a id="modalContentLink" href="#" target="_blank" style="word-break: break-all; text-decoration: none; font-weight: 500;"></a>
+            </div>
+            <a id="modalDownload" href="#" class="apple-link" download style="display: inline-block; background: #0071e3; color: #fff; padding: 8px 16px; border-radius: 12px; text-decoration: none; font-weight: 500;">Завантажити</a>
+        </div>
     </div>
-</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('qrModal');
-        const modalImg = document.getElementById('modalImg');
-        const modalContent = document.getElementById('modalContent');
-        const modalDownload = document.getElementById('modalDownload');
-        const baseAppPath = '/QR-code generator/public/';
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('qrModal');
+            const modalImg = document.getElementById('modalImg');
+            const modalContent = document.getElementById('modalContent');
+            const modalDownload = document.getElementById('modalDownload');
+            const baseAppPath = '/QR-code generator/public/';
 
-        const deleteBtnSelected = document.getElementById('delete-selected');
-        const countSpan = document.getElementById('selected-count');
-        const selectAll = document.getElementById('selectAll');
+            const deleteBtnSelected = document.getElementById('delete-selected');
+            const countSpan = document.getElementById('selected-count');
+            const selectAll = document.getElementById('selectAll');
 
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('view-qr-btn')) {
-                const rawPath = e.target.getAttribute('data-path');
-                const content = e.target.getAttribute('data-content');
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('view-qr-btn')) {
+                    const rawPath = e.target.getAttribute('data-path');
+                    const content = e.target.getAttribute('data-content');
 
-                if (!rawPath) { alert('Зображення відсутнє'); return; }
+                    if (!rawPath) { alert('Зображення відсутнє'); return; }
 
-                const fullPath = baseAppPath + rawPath;
-                modalImg.src = fullPath;
-                modalContent.innerText = content;
-                modalDownload.href = fullPath;
-                modalDownload.setAttribute('download', 'qr-code.png');
-                modal.style.display = 'flex';
-            }
-        });
-
-        if (document.getElementById('closeModal')) {
-            document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
-        }
-        window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; }
-
-        function updateBulkButton() {
-            const selected = document.querySelectorAll('.qr-checkbox:checked').length;
-            if (deleteBtnSelected) {
-                deleteBtnSelected.style.display = selected > 0 ? 'block' : 'none';
-                countSpan.innerText = selected;
-            }
-        }
-
-        if (selectAll) {
-            selectAll.addEventListener('change', function() {
-                document.querySelectorAll('.qr-checkbox').forEach(cb => cb.checked = this.checked);
-                updateBulkButton();
+                    const fullPath = baseAppPath + rawPath;
+                    modalImg.src = fullPath;
+                    modalContent.innerText = content;
+                    modalDownload.href = fullPath;
+                    modalDownload.setAttribute('download', 'qr-code.png');
+                    modal.style.display = 'flex';
+                }
             });
-        }
 
-        document.addEventListener('change', function(e) {
-            if (e.target && e.target.classList.contains('qr-checkbox')) {
-                updateBulkButton();
+            if (document.getElementById('closeModal')) {
+                document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
             }
-        });
+            window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; }
 
-        function sendDeleteRequest(ids) {
-            if (!confirm(`Видалити обрані QR-коди (${ids.length} шт.)?`)) return;
+            function updateBulkButton() {
+                const selected = document.querySelectorAll('.qr-checkbox:checked').length;
+                if (deleteBtnSelected) {
+                    deleteBtnSelected.style.display = selected > 0 ? 'block' : 'none';
+                    countSpan.innerText = selected;
+                }
+            }
 
-            const isAdminPage = window.location.pathname.includes('/admin');
-            const deleteUrl = isAdminPage ? 'admin/delete-qrs' : 'delete-qrs';
+            if (selectAll) {
+                selectAll.addEventListener('change', function() {
+                    document.querySelectorAll('.qr-checkbox').forEach(cb => cb.checked = this.checked);
+                    updateBulkButton();
+                });
+            }
 
-            fetch(baseAppPath + deleteUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ids: ids })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Помилка: ' + (data.message || 'Не вдалося видалити'));
-                    }
+            document.addEventListener('change', function(e) {
+                if (e.target && e.target.classList.contains('qr-checkbox')) {
+                    updateBulkButton();
+                }
+            });
+
+            function sendDeleteRequest(ids) {
+                if (!confirm(`Видалити обрані QR-коди (${ids.length} шт.)?`)) return;
+
+                const isAdminPage = window.location.pathname.includes('/admin');
+                const deleteUrl = isAdminPage ? 'admin/delete-qrs' : 'delete-qrs';
+
+                fetch(baseAppPath + deleteUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: ids })
                 })
-                .catch(err => console.error('Помилка запиту:', err));
-        }
-
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('delete-qr-btn')) {
-                const id = e.target.getAttribute('data-id');
-                sendDeleteRequest([id]);
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Помилка: ' + (data.message || 'Не вдалося видалити'));
+                        }
+                    })
+                    .catch(err => console.error('Помилка запиту:', err));
             }
-            if (e.target && e.target.id === 'delete-selected') {
-                const ids = Array.from(document.querySelectorAll('.qr-checkbox:checked')).map(cb => cb.value);
-                sendDeleteRequest(ids);
-            }
-        });
-    });
 
-    function setMode(mode) {
-        const container = document.getElementById('qr-container');
-        if (!container) return;
-        if (mode === 'grid') {
-            container.classList.add('qr-grid-mode');
-        } else {
-            container.classList.remove('qr-grid-mode');
-        }
-    }
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('delete-qr-btn')) {
+                    const id = e.target.getAttribute('data-id');
+                    sendDeleteRequest([id]);
+                }
+                if (e.target && e.target.id === 'delete-selected') {
+                    const ids = Array.from(document.querySelectorAll('.qr-checkbox:checked')).map(cb => cb.value);
+                    sendDeleteRequest(ids);
+                }
+                if (e.target && e.target.classList.contains('view-qr-btn')) {
+                    var modal = document.getElementById('qrModal');
+                    var modalImg = document.getElementById('modalImg');
+                    var modalContentLink = document.getElementById('modalContentLink');
+                    var modalDownload = document.getElementById('modalDownload');
+                    var dynIcon = document.getElementById('modalDynamicIcon');
 
-    function toggleExpand() {
-        const container = document.getElementById('qr-container');
-        const btn = document.getElementById('toggle-btn');
-        if (!container || !btn) return;
+                    var rawPath    = e.target.getAttribute('data-path');
+                    var contentUrl = e.target.getAttribute('data-content');
+                    var qrType     = e.target.getAttribute('data-type');
+                    var baseAppPath = '/QR-code generator/public/';
+                    var fullPath   = baseAppPath + rawPath;
 
-        const isCollapsing = !container.classList.contains('collapsed');
+                    if (modalImg) modalImg.src = fullPath;
+                    if (modalContentLink) modalContentLink.innerText = contentUrl;
+                    if (modalDownload) modalDownload.href = fullPath;
 
-        container.classList.toggle('collapsed');
-        container.classList.toggle('fade-out');
+                    var iconMap = {image:'🖼️', video:'🎥', pdf:'📄', text:'📝', wifi:'📶', call:'📞', vcard:'👤'};
+                    if (dynIcon) dynIcon.innerText = iconMap[qrType] || '🔗';
 
-        if (container.classList.contains('collapsed')) {
-            btn.innerText = 'Показати всі';
-        } else {
-            btn.innerText = 'Згорнути';
-        }
+                    if (contentUrl && (contentUrl.indexOf('http://') === 0 || contentUrl.indexOf('https://') === 0)) {
+                        modalContentLink.href = contentUrl;
+                        modalContentLink.style.pointerEvents = 'auto';
+                        modalContentLink.style.color = '#0071e3';
+                    } else {
+                        modalContentLink.href = '#';
+                        modalContentLink.style.pointerEvents = 'none';
+                        modalContentLink.style.color = '#1d1d1f';
+                    }
 
-        if (isCollapsing) {
-            container.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
+                    if (modal) modal.style.display = 'flex';
+                }
+
+                if (e.target && e.target.id === 'closeModal') {
+                    var modal = document.getElementById('qrModal');
+                    if (modal) modal.style.display = 'none';
+                }
             });
+
+            window.addEventListener('click', function(e) {
+                var modal = document.getElementById('qrModal');
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        function setMode(mode) {
+            const container = document.getElementById('qr-container');
+            if (!container) return;
+            if (mode === 'grid') {
+                container.classList.add('qr-grid-mode');
+            } else {
+                container.classList.remove('qr-grid-mode');
+            }
         }
-    }
-</script>
+
+        function toggleExpand() {
+            const container = document.getElementById('qr-container');
+            const btn = document.getElementById('toggle-btn');
+            if (!container || !btn) return;
+
+            const isCollapsing = !container.classList.contains('collapsed');
+
+            container.classList.toggle('collapsed');
+            container.classList.toggle('fade-out');
+
+            if (container.classList.contains('collapsed')) {
+                btn.innerText = 'Показати всі';
+            } else {
+                btn.innerText = 'Згорнути';
+            }
+
+            if (isCollapsing) {
+                container.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+    </script>
 </body>
 </html>

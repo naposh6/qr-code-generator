@@ -12,13 +12,14 @@ class QrGeneratorService
 {
     public function generate(QrContentInterface $qrContent, ?string $savePath = null, array $options = []): array
     {
-        $size     = max(100, (int)($options['size']     ?? 400));
+        $size     = max(300, (int)($options['size']     ?? 400));
         $fgHex    = $options['color']    ?? '#000000';
         $bgHex    = $options['bg_color'] ?? '#ffffff';
         $dotStyle = $options['qr_style'] ?? 'square';
         $eyeOuter = $options['eye_outer'] ?? 'square';
         $eyeInner = $options['eye_inner'] ?? 'square';
-        $margin   = max(0, min(10, (int)($options['margin'] ?? 1)));
+
+        $margin   = max(2, min(10, (int)($options['margin'] ?? 2)));
         $logoPath = $options['logo_path'] ?? null;
 
         $fgRgb = $this->hexToRgb($fgHex);
@@ -218,6 +219,7 @@ class QrGeneratorService
 </svg>
 SVG;
     }
+
     private function getEyeRole(int $row, int $col, array $eps): string
     {
         foreach ($eps as [$er, $ec]) {
@@ -243,7 +245,13 @@ SVG;
 
     private function drawDot(float $x, float $y, float $cs, string $style, string $color): string
     {
-        $pad = $cs * 0.08;
+        // 3. ОПТИМІЗАЦІЯ: Прибрано агресивні відступи.
+        // Фігури мають займати максимальну площу комірки ($cs), щоб камера їх бачила.
+        $pad = match ($style) {
+            'vertical', 'horizontal' => $cs * 0.05,
+            default => 0.0 // Кола, квадрати та зірки тепер використовують 100% простору
+        };
+
         $x2  = $x + $pad;
         $y2  = $y + $pad;
         $s   = $cs - $pad * 2;
@@ -256,7 +264,7 @@ SVG;
             "<circle cx='{$cx}' cy='{$cy}' r='{$r}' fill='{$color}'/>",
 
             'rounded' => (function () use ($x2, $y2, $s, $color) {
-                $rr = $s * 0.35;
+                $rr = $s * 0.20; // Зменшено радіус заокруглення для збереження масивності
                 return "<rect x='{$x2}' y='{$y2}' width='{$s}' height='{$s}' rx='{$rr}' ry='{$rr}' fill='{$color}'/>";
             })(),
 
@@ -269,22 +277,19 @@ SVG;
                 $pts = '';
                 for ($i = 0; $i < 8; $i++) {
                     $a  = deg2rad($i * 45 - 22.5);
-                    $ri = ($i % 2 === 0) ? $r : $r * 0.5;
+                    // Збільшено внутрішній радіус зірки (з 0.5 до 0.65), щоб вона була товстішою
+                    $ri = ($i % 2 === 0) ? $r : $r * 0.65;
                     $pts .= ($cx + $ri * sin($a)) . ',' . ($cy - $ri * cos($a)) . ' ';
                 }
                 return "<polygon points='{$pts}' fill='{$color}'/>";
             })(),
 
-            'vertical' => (function () use ($x, $y, $cs, $color) {
-                $pad = $cs * 0.12;
-                $bw  = $cs - $pad * 2;
-                return "<rect x='" . ($x + $pad) . "' y='{$y}' width='{$bw}' height='{$cs}' fill='{$color}'/>";
+            'vertical' => (function () use ($x2, $y, $s, $cs, $color) {
+                return "<rect x='{$x2}' y='{$y}' width='{$s}' height='{$cs}' fill='{$color}'/>";
             })(),
 
-            'horizontal' => (function () use ($x, $y, $cs, $color) {
-                $pad = $cs * 0.12;
-                $bh  = $cs - $pad * 2;
-                return "<rect x='{$x}' y='" . ($y + $pad) . "' width='{$cs}' height='{$bh}' fill='{$color}'/>";
+            'horizontal' => (function () use ($x, $y2, $cs, $s, $color) {
+                return "<rect x='{$x}' y='{$y2}' width='{$cs}' height='{$s}' fill='{$color}'/>";
             })(),
 
             default => "<rect x='{$x2}' y='{$y2}' width='{$s}' height='{$s}' fill='{$color}'/>",
@@ -305,7 +310,7 @@ SVG;
             })(),
 
             'rounded' => (function () use ($x, $y, $size, $sw, $color) {
-                $rr = $size * 0.22;
+                $rr = $size * 0.18; // Зменшено заокруглення очей
                 $x2 = $x + $sw / 2;
                 $y2 = $y + $sw / 2;
                 $s2 = $size - $sw;
@@ -334,7 +339,7 @@ SVG;
             })(),
 
             'rounded' => (function () use ($x, $y, $size, $color) {
-                $rr = $size * 0.28;
+                $rr = $size * 0.20; // Зменшено заокруглення
                 return "<rect x='{$x}' y='{$y}' width='{$size}' height='{$size}' rx='{$rr}' ry='{$rr}' fill='{$color}'/>";
             })(),
 
@@ -350,7 +355,7 @@ SVG;
         $mime     = $finfo->file($logoPath);
 
         $logoSize = (int)($svgW * 0.22);
-        $padding  = (int)($svgW * 0.02);
+        $padding  = (int)($svgW * 0.01);
         $boxSize  = $logoSize + $padding * 2;
         $bx       = ($svgW - $boxSize) / 2;
         $by       = ($svgH - $boxSize) / 2;
@@ -369,15 +374,17 @@ SVG;
         if (extension_loaded('imagick')) {
             try {
                 $im = new \Imagick();
-                $im->setBackgroundColor(new \ImagickPixel('transparent'));
+                $im->setBackgroundColor(new \ImagickPixel('white'));
+                $im->setResolution(300, 300);
                 $im->readImageBlob($svg);
                 $im->setImageFormat('png32');
-                $im->resizeImage($size, $size, \Imagick::FILTER_LANCZOS, 1);
+                $im->resizeImage($size, $size, \Imagick::FILTER_LANCZOS, 1, true);
+                $im->setImageBackgroundColor(new \ImagickPixel('white'));
+                $im->flattenImages();
                 $pngData = $im->getImageBlob();
                 $im->clear();
                 return 'data:image/png;base64,' . base64_encode($pngData);
             } catch (\Exception $e) {
-
             }
         }
 
@@ -387,30 +394,34 @@ SVG;
     private function fallbackGdPng(string $svg, int $size, array $bgRgb, array $fgRgb): string
     {
         $img = imagecreatetruecolor($size, $size);
+        imagealphablending($img, true);
+        imagesavealpha($img, true);
         $bg  = imagecolorallocate($img, $bgRgb['r'], $bgRgb['g'], $bgRgb['b']);
         imagefill($img, 0, 0, $bg);
 
         preg_match_all('/<rect\s([^>]*?)\/>/s', $svg, $rects);
         foreach ($rects[1] as $attrs) {
-            $a  = $this->parseAttrs($attrs);
+            $a = $this->parseAttrs($attrs);
             if (!isset($a['x'], $a['y'], $a['width'], $a['height'])) continue;
 
-            $x  = (int) round((float) $a['x']);
-            $y  = (int) round((float) $a['y']);
-            $w  = (int) round((float) $a['width']);
-            $h  = (int) round((float) $a['height']);
+            $x = (int) round((float) $a['x']);
+            $y = (int) round((float) $a['y']);
+            $w = (int) round((float) $a['width']);
+            $h = (int) round((float) $a['height']);
 
             $stroke = isset($a['stroke']) ? $this->hexToRgb($a['stroke']) : null;
-            $sw     = isset($a['stroke-width']) ? max(1, (int) round((float) $a['stroke-width'])) : 0;
+            $sw     = isset($a['stroke-width']) ? (float) $a['stroke-width'] : 0;
 
             if ($stroke && $sw > 0 && ($a['fill'] ?? '') === 'none') {
-                $sc = imagecolorallocate($img, $stroke['r'], $stroke['g'], $stroke['b']);
-                for ($t = 0; $t < $sw; $t++) {
-                    imagerectangle($img, $x + $t, $y + $t, $x + $w + $t - 1, $y + $h + $t - 1, $sc);
+                $sc   = imagecolorallocate($img, $stroke['r'], $stroke['g'], $stroke['b']);
+                $swi  = max(1, (int) round($sw));
+                for ($t = 0; $t < $swi; $t++) {
+                    imagerectangle($img, $x + $t, $y + $t, $x + $w - $t - 1, $y + $h - $t - 1, $sc);
                 }
             } else {
                 $fillHex = $a['fill'] ?? null;
-                $c   = $fillHex && $fillHex !== 'none' ? $this->hexToRgb($fillHex) : $fgRgb;
+                if ($fillHex === 'none') continue;
+                $c   = $fillHex ? $this->hexToRgb($fillHex) : $fgRgb;
                 $col = imagecolorallocate($img, $c['r'], $c['g'], $c['b']);
                 imagefilledrectangle($img, $x, $y, $x + $w - 1, $y + $h - 1, $col);
             }
@@ -424,17 +435,19 @@ SVG;
             $r  = (float) ($a['r'] ?? 0);
 
             $stroke = isset($a['stroke']) ? $this->hexToRgb($a['stroke']) : null;
-            $sw     = isset($a['stroke-width']) ? max(1, (int) round((float) $a['stroke-width'])) : 0;
+            $sw     = isset($a['stroke-width']) ? (float) $a['stroke-width'] : 0;
 
             if ($stroke && $sw > 0 && ($a['fill'] ?? '') === 'none') {
-                $sc = imagecolorallocate($img, $stroke['r'], $stroke['g'], $stroke['b']);
-                for ($t = 0; $t < $sw; $t++) {
+                $sc  = imagecolorallocate($img, $stroke['r'], $stroke['g'], $stroke['b']);
+                $swi = max(1, (int) round($sw));
+                for ($t = 0; $t < $swi; $t++) {
                     $d = (int) round(($r - $t) * 2);
                     if ($d > 0) imageellipse($img, $cx, $cy, $d, $d, $sc);
                 }
             } else {
                 $fillHex = $a['fill'] ?? null;
-                $c   = $fillHex && $fillHex !== 'none' ? $this->hexToRgb($fillHex) : $fgRgb;
+                if ($fillHex === 'none') continue;
+                $c   = $fillHex ? $this->hexToRgb($fillHex) : $fgRgb;
                 $col = imagecolorallocate($img, $c['r'], $c['g'], $c['b']);
                 $d   = (int) round($r * 2);
                 imagefilledellipse($img, $cx, $cy, $d, $d, $col);
@@ -454,9 +467,31 @@ SVG;
             }
             if (count($coords) < 6) continue;
             $fillHex = $a['fill'] ?? null;
-            $c   = $fillHex && $fillHex !== 'none' ? $this->hexToRgb($fillHex) : $fgRgb;
+            if ($fillHex === 'none') continue;
+            $c   = $fillHex ? $this->hexToRgb($fillHex) : $fgRgb;
             $col = imagecolorallocate($img, $c['r'], $c['g'], $c['b']);
             imagefilledpolygon($img, $coords, (int)(count($coords) / 2), $col);
+        }
+
+        preg_match_all('/<image\s([^>]*?)\/>/s', $svg, $images);
+        foreach ($images[1] as $attrs) {
+            $a    = $this->parseAttrs($attrs);
+            $href = $a['href'] ?? ($a['xlink:href'] ?? '');
+            if (!$href || strpos($href, 'data:') !== 0) continue;
+
+            if (preg_match('/^data:([^;]+);base64,(.+)$/', $href, $dm)) {
+                $imgBin  = base64_decode($dm[2]);
+                $logoImg = @imagecreatefromstring($imgBin);
+                if (!$logoImg) continue;
+
+                $lx = (int) round((float) ($a['x'] ?? 0));
+                $ly = (int) round((float) ($a['y'] ?? 0));
+                $lw = (int) round((float) ($a['width'] ?? imagesx($logoImg)));
+                $lh = (int) round((float) ($a['height'] ?? imagesy($logoImg)));
+
+                imagecopyresampled($img, $logoImg, $lx, $ly, 0, 0, $lw, $lh, imagesx($logoImg), imagesy($logoImg));
+                imagedestroy($logoImg);
+            }
         }
 
         ob_start();

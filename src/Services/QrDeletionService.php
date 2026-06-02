@@ -12,6 +12,10 @@ class QrDeletionService
             if (file_exists($fullPathQr)) {
                 unlink($fullPathQr);
             }
+            $fullPathSvg = str_replace('.png', '.svg', $fullPathQr);
+            if (file_exists($fullPathSvg)) {
+                unlink($fullPathSvg);
+            }
         }
 
         if (in_array($qr['qr_type'], ['image', 'video'])) {
