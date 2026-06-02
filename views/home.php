@@ -92,6 +92,11 @@ if (!isset($recentQrs)) {
             letter-spacing: 0.6px; color: var(--text-3); margin-bottom: 12px;
         }
         .custom-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        .validation-error {
+            background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; border-radius: 8px; margin-top: 10px; color: #856404; font-size: 13px;
+        }
+
         @media (max-width: 600px) {
             .custom-grid-2 { grid-template-columns: 1fr; }
             #step2-layout { grid-template-columns: 1fr !important; }
@@ -159,6 +164,7 @@ if (!isset($recentQrs)) {
                 </div>
 
                 <input type="hidden" name="type" id="hiddenTypeInput" value="url">
+                <div id="validationError" class="validation-error" style="display: none;"></div>
 
                 <div id="dynamicInputContainer">
                     <div id="textContentDiv" class="form-group">
@@ -200,12 +206,13 @@ if (!isset($recentQrs)) {
                     <input type="text" name="title" placeholder="Наприклад: Меню ресторану чи Презентація">
                 </div>
 
-                <button type="button" onclick="goToStep(2)">Продовжити</button>
+                <button type="button" onclick="validateStep1() && goToStep(2)">Продовжити</button>
             </div>
 
             <div id="step-2-content" class="step-section" style="display: none;">
 
                 <div id="step2-layout" style="display: grid; grid-template-columns: 1fr 180px; gap: 20px; align-items: start;">
+
                     <div>
                         <div class="custom-section">
                             <div class="custom-section-title">Кольори</div>
@@ -253,14 +260,6 @@ if (!isset($recentQrs)) {
                                     <input type="radio" name="qr_style" value="diamond" style="display:none">
                                     <svg width="36" height="36" viewBox="0 0 10 10"><polygon points="5,1 9,5 5,9 1,5"/></svg>
                                     Ромб
-                                </label>
-
-                                <label class="style-option" data-val="star">
-                                    <input type="radio" name="qr_style" value="star" style="display:none">
-                                    <svg width="36" height="36" viewBox="0 0 10 10">
-                                        <polygon points="5,1 6.2,3.8 9.5,4.1 7.2,6.2 7.9,9.5 5,7.9 2.1,9.5 2.8,6.2 0.5,4.1 3.8,3.8"/>
-                                    </svg>
-                                    Зірка
                                 </label>
 
                                 <label class="style-option" data-val="vertical">
@@ -347,12 +346,12 @@ if (!isset($recentQrs)) {
                                     </select>
                                 </div>
                                 <div class="form-group" style="margin:0">
-                                    <label>Відступ (модулів)</label>
+                                    <label>Білий простір (модулів)</label>
                                     <select name="margin">
-                                        <option value="0">0 — без відступу</option>
-                                        <option value="1" selected>1 — мінімальний</option>
-                                        <option value="2">2 — стандартний</option>
-                                        <option value="4">4 — великий</option>
+                                        <option value="0">0 — мінімальний</option>
+                                        <option value="1" selected>1 — стандартний</option>
+                                        <option value="2">2 — широкий</option>
+                                        <option value="4">4 — дуже широкий</option>
                                     </select>
                                 </div>
                                 <div class="form-group" style="margin:0; grid-column: span 2;">
@@ -413,11 +412,9 @@ if (!isset($recentQrs)) {
                         <button type="button" id="downloadSvgBtn" style="background:var(--accent); color:#fff;">
                             Завантажити SVG (вектор)
                         </button>
-                        <a id="downloadPngBtn" href="" download="qr-code.png" style="text-decoration:none;">
-                            <button type="button" style="background:var(--surface-2); color:var(--text); border:1px solid var(--border-solid);">
-                                Завантажити PNG (растр)
-                            </button>
-                        </a>
+                        <button type="button" id="downloadPngBtn" style="background:var(--surface-2); color:var(--text); border:1px solid var(--border-solid);">
+                            Завантажити PNG (растр)
+                        </button>
                         <button type="button" onclick="resetGenerator()" style="background:transparent; color:var(--accent); border:none; cursor:pointer; font-weight:500; font-size:14px; padding:10px; width:auto; margin:0 auto;">
                             + Нова генерація
                         </button>
@@ -492,8 +489,42 @@ if (!isset($recentQrs)) {
     const searchInput       = document.getElementById('history-search');
     const historyContainer  = document.getElementById('history-container');
     const paginationWrapper = document.getElementById('pagination-wrapper');
-
     let _lastSvg = '';
+
+    function validateStep1() {
+        const type = document.getElementById('hiddenTypeInput').value;
+        const errorEl = document.getElementById('validationError');
+        let error = '';
+
+        if (type === 'url' || type === 'text') {
+            const content = document.getElementById('mainContentInput').value.trim();
+            if (!content) error = '❌ Будь ласка, заповніть ' + (type === 'url' ? 'посилання' : 'текст');
+        } else if (type === 'wifi') {
+            const ssid = document.getElementById('wifiSsidInput').value.trim();
+            if (!ssid) error = '❌ Будь ласка, введіть назву Wi-Fi мережи';
+        } else if (type === 'call') {
+            const phone = document.getElementById('callPhoneInput').value.trim();
+            if (!phone) error = '❌ Будь ласка, введіть номер телефону';
+        } else if (type === 'vcard') {
+            const name = document.getElementById('vcardNameInput').value.trim();
+            const phone = document.getElementById('vcardPhoneInput').value.trim();
+            if (!name || !phone) error = '❌ Будь ласка, заповніть ім\'я та телефон';
+        } else if (['image', 'video', 'pdf'].includes(type)) {
+            const file = document.getElementById('mainFileInput').files[0];
+            if (!file) error = '❌ Будь ласка, оберіть файл';
+            else if (file.size > 10 * 1024 * 1024) error = '❌ Файл занадто великий (максимум 10 МБ)';
+        }
+
+        if (error) {
+            errorEl.textContent = error;
+            errorEl.style.display = 'block';
+            window.scrollTo({top: document.getElementById('validationError').offsetTop - 100, behavior: 'smooth'});
+            return false;
+        }
+
+        errorEl.style.display = 'none';
+        return true;
+    }
 
     function goToStep(stepNum) {
         document.querySelectorAll('.step-section').forEach(el => el.style.display = 'none');
@@ -526,7 +557,6 @@ if (!isset($recentQrs)) {
         document.getElementById('fgColorHex').value    = '#000000';
         document.getElementById('bgColorPicker').value = '#ffffff';
         document.getElementById('bgColorHex').value    = '#ffffff';
-        // Reset result area
         document.getElementById('qrLoader').style.display = 'block';
         document.getElementById('qrResult').style.display  = 'none';
         _lastSvg = '';
@@ -601,7 +631,6 @@ if (!isset($recentQrs)) {
     initStylePicker('dotStylePicker');
     initStylePicker('eyeOuterPicker');
     initStylePicker('eyeInnerPicker');
-
     document.querySelectorAll('select[name="qr_size"], select[name="margin"]').forEach(el => {
         el.addEventListener('change', scheduleLivePreview);
     });
@@ -712,10 +741,6 @@ if (!isset($recentQrs)) {
         if (style==='circle')   return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+color+'"/>';
         if (style==='rounded')  { var rr=s*0.35; return '<rect x="'+x2+'" y="'+y2+'" width="'+s+'" height="'+s+'" rx="'+rr+'" fill="'+color+'"/>'; }
         if (style==='diamond')  { var pts=cx+','+(cy-r)+' '+(cx+r)+','+cy+' '+cx+','+(cy+r)+' '+(cx-r)+','+cy; return '<polygon points="'+pts+'" fill="'+color+'"/>'; }
-        if (style==='star')     {
-            var pts=''; for(var i=0;i<8;i++){var a=(i*45-22.5)*Math.PI/180,ri=i%2===0?r:r*0.5;pts+=(cx+ri*Math.sin(a))+','+(cy-ri*Math.cos(a))+' ';}
-            return '<polygon points="'+pts+'" fill="'+color+'"/>';
-        }
         if (style==='vertical')   { var bw=cs*0.76; return '<rect x="'+(x+(cs-bw)/2)+'" y="'+y+'" width="'+bw+'" height="'+cs+'" fill="'+color+'"/>'; }
         if (style==='horizontal') { var bh=cs*0.76; return '<rect x="'+x+'" y="'+(y+(cs-bh)/2)+'" width="'+cs+'" height="'+bh+'" fill="'+color+'"/>'; }
         return '<rect x="'+x2+'" y="'+y2+'" width="'+s+'" height="'+s+'" fill="'+color+'"/>';
@@ -757,8 +782,6 @@ if (!isset($recentQrs)) {
                         svgWrap.innerHTML = data.svg;
                         var svgEl = svgWrap.querySelector('svg');
                         if (svgEl) { svgEl.style.width = '240px'; svgEl.style.height = '240px'; }
-                    } else {
-                        svgWrap.innerHTML = '<img src="' + baseAppPath + data.media_path + '" style="width:240px;height:240px;object-fit:contain;">';
                     }
 
                     document.getElementById('downloadSvgBtn').onclick = function() {
@@ -770,8 +793,6 @@ if (!isset($recentQrs)) {
                         setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                     };
 
-                    var pngHref = data.png_uri || (baseAppPath + data.media_path);
-                    document.getElementById('downloadPngBtn').href = pngHref;
 
                     var type = document.getElementById('hiddenTypeInput').value;
                     var displayLink  = document.getElementById('resultDisplayLink');
@@ -805,6 +826,42 @@ if (!isset($recentQrs)) {
             });
     });
 
+    document.getElementById('downloadPngBtn').onclick = function(e) {
+        e.preventDefault();
+
+        const svgElement = document.querySelector('#generatedQrSvgWrap svg');
+        if (!svgElement) { alert('SVG не знайдено'); return; }
+
+        const xml = new XMLSerializer().serializeToString(svgElement);
+        const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+
+            const exportSize = 1000;
+            canvas.width = exportSize;
+            canvas.height = exportSize;
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, exportSize, exportSize);
+            ctx.drawImage(img, 0, 0, exportSize, exportSize);
+
+            const png = canvas.toDataURL('image/png');
+
+            const a = document.createElement('a');
+            a.href = png;
+            a.download = 'qr-code.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(url);
+        };
+        img.src = url;
+    };
+
     function loadHistory(page, search) {
         page   = page   || 1;
         search = search || '';
@@ -814,8 +871,12 @@ if (!isset($recentQrs)) {
                 return res.json();
             })
             .then(function(data) {
-                var qrs = Array.isArray(data) ? data : (data.data || []);
-                totalItems = data.total !== undefined ? data.total : (qrs.length < limitPerPage ? (page-1)*limitPerPage+qrs.length : page*limitPerPage+1);
+                if (!Array.isArray(data)) {
+                    throw new Error('Невірний формат відповіді');
+                }
+
+                var qrs = data;
+                totalItems = qrs.length < limitPerPage ? (page-1)*limitPerPage+qrs.length : page*limitPerPage+1;
 
                 if (qrs.length === 0) {
                     historyContainer.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#86868b;">Нічого не знайдено</td></tr>';
@@ -956,8 +1017,12 @@ if (!isset($recentQrs)) {
                 var rawPath    = e.target.getAttribute('data-path');
                 var contentUrl = e.target.getAttribute('data-content');
                 var qrType     = e.target.getAttribute('data-type');
-                var fullPath   = baseAppPath + rawPath;
 
+                if (rawPath && rawPath.endsWith('.png')) {
+                    rawPath = rawPath.replace('.png', '.svg');
+                }
+
+                var fullPath   = baseAppPath + rawPath;
                 modalImg.src = fullPath;
                 modalContentLink.innerText = contentUrl;
 

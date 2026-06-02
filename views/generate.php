@@ -112,11 +112,17 @@ try {
 
     $result = $qrService->generate($qrContent, $fullSavePath, $options);
 
-    $qrRepo->save($type, $finalData, $userId ? (int)$userId : null, $relativePath, $title);
+    $svgFileName     = pathinfo($fileName, PATHINFO_FILENAME) . '.svg';
+    $svgRelativePath = 'uploads/qr/' . $svgFileName;
+    $svgFullSavePath = __DIR__ . '/../public/' . $svgRelativePath;
+    file_put_contents($svgFullSavePath, $result['svg']);
+
+    $qrRepo->save($type, $finalData, $userId ? (int)$userId : null, $relativePath, $title, $svgRelativePath);
 
     echo json_encode([
         'success'    => true,
         'media_path' => $relativePath,
+        'svg_path'   => $svgRelativePath,
         'svg'        => $result['svg'],
         'png_uri'    => $result['png_data_uri'],
         'title'      => $title

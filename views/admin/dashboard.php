@@ -181,17 +181,64 @@
             });
         }
     }
+
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('view-qr-btn')) {
+            var modal = document.getElementById('qrModal');
+            var modalImg = document.getElementById('modalImg');
+            var modalContentLink = document.getElementById('modalContentLink');
+            var modalDownload = document.getElementById('modalDownload');
+            var dynIcon = document.getElementById('modalDynamicIcon');
+
+            var rawPath    = e.target.getAttribute('data-path');
+            var contentUrl = e.target.getAttribute('data-content');
+            var qrType     = e.target.getAttribute('data-type');
+            var baseAppPath = '/QR-code generator/public/';
+            var fullPath   = baseAppPath + rawPath;
+
+            if (modalImg) modalImg.src = fullPath;
+            if (modalContentLink) modalContentLink.innerText = contentUrl;
+            if (modalDownload) modalDownload.href = fullPath;
+
+            var iconMap = {image:'🖼️', video:'🎥', pdf:'📄', text:'📝', wifi:'📶', call:'📞', vcard:'👤'};
+            if (dynIcon) dynIcon.innerText = iconMap[qrType] || '🔗';
+
+            if (contentUrl && (contentUrl.indexOf('http://') === 0 || contentUrl.indexOf('https://') === 0)) {
+                modalContentLink.href = contentUrl;
+                modalContentLink.style.pointerEvents = 'auto';
+                modalContentLink.style.color = '#0071e3';
+            } else {
+                modalContentLink.href = '#';
+                modalContentLink.style.pointerEvents = 'none';
+                modalContentLink.style.color = '#1d1d1f';
+            }
+
+            if (modal) modal.style.display = 'flex';
+        }
+
+        if (e.target && e.target.id === 'closeModal') {
+            var modal = document.getElementById('qrModal');
+            if (modal) modal.style.display = 'none';
+        }
+    });
+
+    window.addEventListener('click', function(e) {
+        var modal = document.getElementById('qrModal');
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 </script>
 
 <div id="qrModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); align-items: center; justify-content: center;">
     <div class="card" style="position:relative; max-width: 400px; width: 90%; text-align:center; padding: 40px;">
         <span id="closeModal" style="position:absolute; right:20px; top:10px; cursor:pointer; font-size:28px; color: #86868b;">&times;</span>
-        <h3 style="margin-top: 0;">Перегляд QR-коду</h3>
+        <h3 style="margin-top: 0;"><span id="modalDynamicIcon">🔗</span> Перегляд QR-коду</h3>
         <img id="modalImg" src="" style="max-width:100%; border-radius:12px; border: 1px solid #d2d2d7; margin: 20px 0;">
-        <p id="modalContent" style="word-break: break-all; font-size: 14px; color: #0071e3; margin-bottom: 20px;"></p>
-        <a id="modalDownload" href="" download="qr-code.png" class="apple-link" style="display: block; background: #0071e3; color: white; padding: 12px; border-radius: 12px; text-decoration: none; font-weight: 600;">
-            Завантажити PNG
-        </a>
+        <div style="margin-bottom: 20px;">
+            <a id="modalContentLink" href="#" target="_blank" style="word-break: break-all; text-decoration: none; font-weight: 500;"></a>
+        </div>
+        <a id="modalDownload" href="#" class="apple-link" download style="display: inline-block; background: #0071e3; color: #fff; padding: 8px 16px; border-radius: 12px; text-decoration: none; font-weight: 500;">Завантажити</a>
     </div>
 </div>
 </body>

@@ -88,7 +88,7 @@
                     <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
                         <button class="apple-link view-qr-btn"
                                 style="background: #f5f5f7; border: none; padding: 6px 12px; border-radius: 20px; color: #0071e3; cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s;"
-                                data-path="<?= htmlspecialchars($qr['media_path'] ?? '') ?>"
+                                data-path="<?= htmlspecialchars(str_replace('.png', '.svg', $qr['media_path'] ?? '')) ?>"
                                 data-content="<?= htmlspecialchars($qr['original_url'] ?? '') ?>">
                             Переглянути
                         </button>
