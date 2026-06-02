@@ -40,6 +40,11 @@ try {
 $router = new Router();
 $baseDir = $router->getBaseDir();
 
+if (!defined('APP_URL')) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    define('APP_URL', $protocol . '://' . $_SERVER['HTTP_HOST'] . $baseDir);
+}
+
 // Головна сторінка
 $router->add('/', function($baseDir) {
     if (!isset($_SESSION['user_id'])) {
@@ -74,6 +79,7 @@ $router->add('/logout', [AuthController::class, 'logout']);
 // Профіль
 $router->add('/profile', [UserController::class, 'profile']);
 $router->add('/profile/update-password', [UserController::class, 'updatePassword']);
+$router->add('/profile/update-nickname', [UserController::class, 'updateNickname']);
 $router->add('/profile/update-avatar', [UserController::class, 'updateAvatar']);
 $router->add('/delete-qrs', [UserController::class, 'deleteMyQrs']);
 

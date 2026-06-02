@@ -64,21 +64,42 @@ class UserController {
         echo json_encode(['success' => $result]);
     }
 
+    public function updateNickname() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $nickname = trim($_POST['nickname'] ?? '');
+            $userId = $_SESSION['user_id'];
+            $this->userRepo->updateNickname($userId, $nickname);
+            $_SESSION['user_nickname'] = $nickname;
+            header("Location: /QR-code generator/public/profile?success=1");
+            exit;
+        }
+    }
+
     public function updatePassword() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $password = $_POST['password'] ?? '';
             $confirm = $_POST['password_confirm'] ?? '';
             $userId = $_SESSION['user_id'];
 
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
+
             if ($password === $confirm && strlen($password) >= 6) {
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $this->userRepo->updatePassword($userId, $hashedPassword);
 
-                $userRepo = new UserRepository();
-                $userRepo->updatePassword($userId, $hashedPassword);
-
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true]);
+                    exit;
+                }
                 header("Location: /QR-code generator/public/profile?success=1");
                 exit;
             } else {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Паролі не співпадають або занадто короткі (мін. 6 символів)']);
+                    exit;
+                }
                 header("Location: /QR-code generator/public/profile?error=invalid_password");
                 exit;
             }

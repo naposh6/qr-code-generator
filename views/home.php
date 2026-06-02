@@ -13,6 +13,7 @@ if (!isset($recentQrs)) {
 <head>
     <meta charset="UTF-8">
     <title>GenerQR — Головна</title>
+    <link rel="icon" type="image/png" href="/QR-code generator/public/assets/logo-qr.png">
     <link rel="stylesheet" href="/QR-code generator/public/css/style.css">
     <style>
         .stepper-timeline {
@@ -25,7 +26,7 @@ if (!isset($recentQrs)) {
             text-align: center;
             padding: 10px;
             font-weight: 500;
-            color: #86868b;
+            color: var(--text-2);
             border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
         }
@@ -110,8 +111,13 @@ if (!isset($recentQrs)) {
 <div class="container">
 
     <nav class="user-nav">
-        <div class="user-info">
-            <span>Привіт, <strong><?= htmlspecialchars($_SESSION['user_email']) ?></strong></span>
+        <div style="display:flex; align-items:center; gap:0;">
+            <div class="nav-logo-slot" id="site-logo-slot">
+                <img src="/QR-code generator/public/assets/logo-qr.png" alt="GenerQR" style="width:28px;height:28px;">
+            </div>
+            <div class="user-info">
+                <span>Привіт, <strong><?= htmlspecialchars(!empty($_SESSION['user_nickname']) ? $_SESSION['user_nickname'] : $_SESSION['user_email']) ?></strong></span>
+            </div>
         </div>
         <div class="nav-links">
             <a href="profile" class="apple-link">Мій профіль</a>
@@ -464,9 +470,13 @@ if (!isset($recentQrs)) {
     </div>
 </div>
 
+<footer class="site-footer-bar">
+    © 2026 QR Code Generator · Powered by <a href="#" tabindex="-1">naposh</a>
+</footer>
+
 <div id="qrModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: center; justify-content: center;">
     <div class="card" style="max-width: 400px; text-align:center; padding: 30px; position: relative; margin: 0 auto;">
-        <span id="closeModal" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:24px; color: #86868b;">&times;</span>
+        <span id="closeModal" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:24px; color: var(--text-3);">&times;</span>
         <h3 style="margin-top: 0; font-weight: 600;">Перегляд QR-коду</h3>
         <img id="modalImg" src="" style="width: 250px; height: 250px; margin: 15px auto; display: block; object-fit: contain;">
         <div style="margin-bottom: 20px; padding: 0 10px;">
@@ -488,7 +498,7 @@ if (!isset($recentQrs)) {
 </div>
 
 <script>
-    const baseAppPath = '/QR-code generator/public/';
+    const baseAppPath = '<?= defined('APP_URL') ? rtrim(APP_URL, '/') . '/' : '/QR-code generator/public/' ?>';
     let currentPage = 1;
     let totalItems  = 0;
     const limitPerPage = 5;
@@ -911,24 +921,24 @@ if (!isset($recentQrs)) {
 
                     var dateStr = new Date(qr.created_at).toLocaleDateString('uk-UA',{day:'2-digit',month:'2-digit',year:'numeric'});
 
-                    return '<tr id="qr-row-'+qr.id+'" style="border-bottom:1px solid #e8e8ed;">'
+                    return '<tr id="qr-row-'+qr.id+'" style="border-bottom:1px solid var(--border);">'
                         +'<td style="padding:12px;"><input type="checkbox" class="qr-checkbox" value="'+qr.id+'"></td>'
-                        +'<td style="padding:12px;"><span class="badge" style="background:#e8e8ed;color:#1d1d1f;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;">'+qr.qr_type.toUpperCase()+'</span></td>'
+                        +'<td style="padding:12px;"><span class="badge">'+qr.qr_type.toUpperCase()+'</span></td>'
                         +'<td style="padding:12px;">'
                         +'<div style="display:flex;align-items:center;gap:15px;">'
-                        +'<div style="width:46px;height:46px;background:#fff;border-radius:10px;padding:3px;border:1px solid #d2d2d7;box-shadow:0 2px 5px rgba(0,0,0,.04);flex-shrink:0;position:relative;">'
+                        +'<div style="width:46px;height:46px;background:var(--surface);border-radius:10px;padding:3px;border:1px solid var(--border-solid);box-shadow:var(--shadow-sm);flex-shrink:0;position:relative;">'
                         +'<img src="'+baseAppPath+qr.media_path+'" style="width:100%;height:100%;object-fit:contain;border-radius:6px;">'
-                        +'<div style="position:absolute;bottom:-4px;right:-4px;background:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;border:1px solid #d2d2d7;">'+icon+'</div>'
+                        +'<div style="position:absolute;bottom:-4px;right:-4px;background:var(--surface);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;border:1px solid var(--border-solid);">'+icon+'</div>'
                         +'</div>'
                         +'<div style="max-width:250px;overflow:hidden;">'
-                        +'<div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+displayTitle+'</div>'
-                        +'<div style="font-size:12px;color:#0071e3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+displaySub+'</div>'
+                        +'<div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);">'+displayTitle+'</div>'
+                        +'<div style="font-size:12px;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+displaySub+'</div>'
                         +'</div></div></td>'
-                        +'<td style="padding:12px;color:#86868b;font-size:13px;">'+dateStr+'</td>'
+                        +'<td style="padding:12px;color:var(--text-2);font-size:13px;">'+dateStr+'</td>'
                         +'<td style="padding:12px;text-align:right;">'
                         +'<div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;">'
-                        +'<button class="view-qr-btn" data-path="'+qr.media_path+'" data-content="'+targetUrl+'" data-type="'+qr.qr_type+'" style="padding:8px 14px;font-size:12px;background:rgba(0,113,227,.1);color:#0071e3;border:none;border-radius:12px;cursor:pointer;font-weight:500;width:auto;margin-top:0;">Відкрити</button>'
-                        +'<button class="delete-qr-btn" data-id="'+qr.id+'" style="background:none;color:#ff3b30;border:none;cursor:pointer;font-size:20px;padding:0 5px;width:auto;margin-top:0;">&times;</button>'
+                        +'<button class="view-qr-btn" data-path="'+qr.media_path+'" data-content="'+targetUrl+'" data-type="'+qr.qr_type+'" style="padding:8px 14px;font-size:12px;background:var(--accent-subtle);color:var(--accent);border:none;border-radius:12px;cursor:pointer;font-weight:500;width:auto;margin-top:0;">Відкрити</button>'
+                        +'<button class="delete-qr-btn" data-id="'+qr.id+'" style="background:none;color:var(--danger);border:none;cursor:pointer;font-size:20px;padding:0 5px;width:auto;margin-top:0;">&times;</button>'
                         +'</div></td></tr>';
                 }).join('');
 
@@ -1050,7 +1060,6 @@ if (!isset($recentQrs)) {
                     modalDownloadPngBtn.href = fullPath.replace('.svg', '.png');
                 }
 
-// Для SVG залишаємо оригінальний fullPath
                 var modalDownloadSvgBtn = document.getElementById('modalDownloadSvg');
                 if (modalDownloadSvgBtn) {
                     modalDownloadSvgBtn.href = fullPath;

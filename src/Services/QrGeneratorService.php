@@ -245,11 +245,9 @@ SVG;
 
     private function drawDot(float $x, float $y, float $cs, string $style, string $color): string
     {
-        // 3. ОПТИМІЗАЦІЯ: Прибрано агресивні відступи.
-        // Фігури мають займати максимальну площу комірки ($cs), щоб камера їх бачила.
         $pad = match ($style) {
             'vertical', 'horizontal' => $cs * 0.05,
-            default => 0.0 // Кола, квадрати та зірки тепер використовують 100% простору
+            default => 0.0
         };
 
         $x2  = $x + $pad;
@@ -264,7 +262,7 @@ SVG;
             "<circle cx='{$cx}' cy='{$cy}' r='{$r}' fill='{$color}'/>",
 
             'rounded' => (function () use ($x2, $y2, $s, $color) {
-                $rr = $s * 0.20; // Зменшено радіус заокруглення для збереження масивності
+                $rr = $s * 0.20;
                 return "<rect x='{$x2}' y='{$y2}' width='{$s}' height='{$s}' rx='{$rr}' ry='{$rr}' fill='{$color}'/>";
             })(),
 
@@ -277,7 +275,6 @@ SVG;
                 $pts = '';
                 for ($i = 0; $i < 8; $i++) {
                     $a  = deg2rad($i * 45 - 22.5);
-                    // Збільшено внутрішній радіус зірки (з 0.5 до 0.65), щоб вона була товстішою
                     $ri = ($i % 2 === 0) ? $r : $r * 0.65;
                     $pts .= ($cx + $ri * sin($a)) . ',' . ($cy - $ri * cos($a)) . ' ';
                 }
@@ -310,7 +307,7 @@ SVG;
             })(),
 
             'rounded' => (function () use ($x, $y, $size, $sw, $color) {
-                $rr = $size * 0.18; // Зменшено заокруглення очей
+                $rr = $size * 0.18;
                 $x2 = $x + $sw / 2;
                 $y2 = $y + $sw / 2;
                 $s2 = $size - $sw;
@@ -339,7 +336,7 @@ SVG;
             })(),
 
             'rounded' => (function () use ($x, $y, $size, $color) {
-                $rr = $size * 0.20; // Зменшено заокруглення
+                $rr = $size * 0.20;
                 return "<rect x='{$x}' y='{$y}' width='{$size}' height='{$size}' rx='{$rr}' ry='{$rr}' fill='{$color}'/>";
             })(),
 

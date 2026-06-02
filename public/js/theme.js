@@ -1,4 +1,3 @@
-
 (function () {
     'use strict';
 
@@ -103,6 +102,7 @@
     function init() {
         buildToggle();
         enhanceFileInputs();
+        buildScrollTop();
 
         observer.observe(document.body, {
             childList: true,
@@ -110,36 +110,63 @@
         });
     }
 
+    function buildScrollTop() {
+        if (document.getElementById('scroll-top-btn')) return;
+        var btn = document.createElement('button');
+        btn.id = 'scroll-top-btn';
+        btn.setAttribute('aria-label', 'Вгору');
+        btn.setAttribute('title', 'Вгору');
+        btn.innerHTML = '↑';
+        btn.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        document.body.appendChild(btn);
+
+        window.addEventListener('scroll', function () {
+            if (window.scrollY > 320) {
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
+            }
+        }, { passive: true });
+    }
+
+    function downloadPngFromModalImg() {
+        const modalImg = document.getElementById('modalImg');
+        if (!modalImg || !modalImg.src) return;
+        const svgSrc = modalImg.src.replace(/\.png(\?.*)?$/, '.svg');
+
+        fetch(svgSrc)
+            .then(function (r) { return r.text(); })
+            .then(function (svgText) {
+                const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+                const url  = URL.createObjectURL(blob);
+                const img  = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    const exportSize = 1000;
+                    canvas.width  = exportSize;
+                    canvas.height = exportSize;
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, exportSize, exportSize);
+                    ctx.drawImage(img, 0, 0, exportSize, exportSize);
+                    const pngUrl = canvas.toDataURL('image/png');
+                    URL.revokeObjectURL(url);
+                    const a = document.createElement('a');
+                    a.href     = pngUrl;
+                    a.download = 'qrcode.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                };
+                img.src = url;
+            });
+    }
+
     document.addEventListener('click', function (e) {
-        if (e.target && e.target.id === 'modalDownload') {
+        if (e.target && (e.target.id === 'modalDownload' || e.target.id === 'modalDownloadPng')) {
             e.preventDefault();
-            const modalImg = document.getElementById('modalImg');
-            if (!modalImg || !modalImg.src) return;
-
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-
-            img.onload = function () {
-                const canvas = document.createElement('canvas');
-
-                const exportSize = 1000;
-                canvas.width = exportSize;
-                canvas.height = exportSize;
-
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, exportSize, exportSize);
-
-                ctx.drawImage(img, 0, 0, exportSize, exportSize);
-
-                const pngUrl = canvas.toDataURL('image/png');
-                const downloadLink = document.createElement('a');
-                downloadLink.href = pngUrl;
-                downloadLink.download = 'qrcode.png';
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-            };
-            img.src = modalImg.src;
+            downloadPngFromModalImg();
         }
     });
 

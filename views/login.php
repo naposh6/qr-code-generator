@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Вхід - GenerQR</title>
+    <link rel="icon" type="image/png" href="/QR-code generator/public/assets/logo-qr.png">
     <link rel="stylesheet" href="/QR-code generator/public/css/style.css">
 </head>
 
@@ -24,6 +25,10 @@
         </form>
         <p>Немає акаунту? <a href="register">Реєстрація</a></p>
     </div>
+</div>
+<footer class="site-footer-bar" style="margin-top: 24px;">
+    © 2026 QR Code Generator · Powered by <a href="#" tabindex="-1">naposh</a>
+</footer>
 </div>
 </body>
 </html>

@@ -32,9 +32,17 @@ class UserRepository {
     }
 
     public function getAllUsers(): array {
-        $sql = "SELECT id, email, role, created_at FROM users ORDER BY created_at DESC";
+        $sql = "SELECT id, email, nickname, role, created_at FROM users ORDER BY created_at DESC";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
+    }
+
+    public function updateNickname(int $userId, string $nickname): bool {
+        $sql = "UPDATE users SET nickname = :nickname WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':nickname', $nickname === '' ? null : $nickname);
+        $stmt->bindValue(':id', $userId, \PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     public function updateRole(int $userId, string $role): bool {
