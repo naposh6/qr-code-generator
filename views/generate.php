@@ -19,7 +19,7 @@ $content = $_POST['content'] ?? '';
 $userId  = $_SESSION['user_id'] ?? null;
 
 if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Сесія закінчилася. Будь ласка, авторизуйтесь знову.']);
+    echo json_encode(['success' => false, 'message' => 'Сесія закінчилися. Будь ласка, авторизуйтесь знову.']);
     exit;
 }
 
@@ -32,6 +32,10 @@ try {
         throw new \Exception("Файл занадто великий для сервера.");
     }
 
+    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    $baseAppUrl = "{$protocol}://{$host}/QR-code%20generator/public/";
+
     $finalData   = '';
     $factoryData = null;
     $title       = $_POST['title'] ?? null;
@@ -40,9 +44,9 @@ try {
         'color'      => $_POST['qr_color']    ?? '#000000',
         'bg_color'   => $_POST['bg_color']    ?? '#ffffff',
         'size'       => (int)($_POST['qr_size'] ?? 400),
-        'qr_style'   => $_POST['qr_style']    ?? 'square',   // dot shape
-        'eye_outer'  => $_POST['eye_outer']   ?? 'square',   // outer eye border
-        'eye_inner'  => $_POST['eye_inner']   ?? 'square',   // inner eye dot
+        'qr_style'   => $_POST['qr_style']    ?? 'square',
+        'eye_outer'  => $_POST['eye_outer']   ?? 'square',
+        'eye_inner'  => $_POST['eye_inner']   ?? 'square',
         'margin'     => max(0, min(4, (int)($_POST['margin'] ?? 1))),
         'logo_path'  => null,
     ];
@@ -57,19 +61,20 @@ try {
             throw new \Exception("Будь ласка, завантажте файл.");
         }
         $uploadedFilePath = $fileService->upload($_FILES['qr_file'], $type);
-        $finalData        = 'http://localhost/QR-code%20generator/public/' . $uploadedFilePath;
+        $finalData        = $baseAppUrl . $uploadedFilePath;
 
     } elseif ($type === 'pdf') {
         if (!isset($_FILES['qr_file']) || $_FILES['qr_file']['error'] !== UPLOAD_ERR_OK) {
             throw new \Exception("Будь ласка, оберіть PDF.");
         }
-        $uploadedFilePath = $fileService->upload($_FILES['qr_file'], 'image');
-        $finalData        = 'http://localhost/QR-code%20generator/public/' . $uploadedFilePath;
+        $uploadedFilePath = $fileService->upload($_FILES['qr_file'], 'pdf');
+        $finalData        = $baseAppUrl . $uploadedFilePath;
 
     } elseif ($type === 'wifi') {
         $ssid = trim($_POST['wifi_ssid'] ?? '');
         $pass = $_POST['wifi_password'] ?? '';
-        $enc  = 'WPA';
+        $enc  = $_POST['wifi_encryption'] ?? 'WPA';
+
         if (empty($ssid)) throw new \Exception("Введіть назву Wi-Fi мережі (SSID).");
         $finalData   = "WIFI:T:{$enc};S:{$ssid};P:{$pass};;";
         $factoryData = json_encode(['ssid' => $ssid, 'password' => $pass, 'encryption' => $enc]);
@@ -102,7 +107,7 @@ try {
     $fullSavePath = __DIR__ . '/../public/' . $relativePath;
 
     if (!is_dir(dirname($fullSavePath))) {
-        mkdir(dirname($fullSavePath), 0777, true);
+        mkdir(dirname($fullSavePath), 0755, true);
     }
 
     $result = $qrService->generate($qrContent, $fullSavePath, $options);
@@ -114,6 +119,7 @@ try {
         'media_path' => $relativePath,
         'svg'        => $result['svg'],
         'png_uri'    => $result['png_data_uri'],
+        'title'      => $title
     ]);
     exit;
 

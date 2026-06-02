@@ -858,6 +858,13 @@ table tbody td {
     text-decoration: underline;
 }
 
+.preview-card img, #modalImg {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+}
+
 
 /* Tablet (≤ 768px) */
 @media (max-width: 768px) {
@@ -971,22 +978,18 @@ table tbody td {
         text-align: center;
     }
 
-    /* Nav compact */
     .user-info { font-size: 13px; }
 
     .apple-link { font-size: 13px; padding: 6px 8px; }
 
-    /* Stats single column */
     .stats-grid {
         grid-template-columns: 1fr;
     }
 
-    /* Type cards */
     .qr-types-selector-grid {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 
-    /* Theme toggle — bottom center on mobile */
     #theme-toggle {
         bottom: 16px;
         right: 16px;
