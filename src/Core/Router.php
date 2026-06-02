@@ -7,7 +7,6 @@ class Router {
     private string $baseDir;
 
     public function __construct() {
-        // Динамічно визначаємо базовий шлях для коректної роботи роутингу
         $this->baseDir = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
     }
 

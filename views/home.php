@@ -475,9 +475,15 @@ if (!isset($recentQrs)) {
                 <a id="modalContentLink" href="" target="_blank" class="apple-link" style="padding: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none;"></a>
             </div>
         </div>
-        <a id="modalDownload" href="" download="qr-code.png" style="text-decoration: none;">
-            <button type="button" style="background: #1d1d1f; color: #fff;">Завантажити PNG</button>
-        </a>
+        <div style="display: flex; gap: 10px; justify-content: center; width: 100%; margin-top: 15px;">
+            <a href="#" id="modalDownloadPng" download="qrcode.png" style="flex: 1; text-align: center; align-content: center; text-decoration: none; padding: 12px; background: #0071e3; color: white; border-radius: 12px; font-weight: 600; font-size: 13px; transition: 0.2s;">
+                Завантажити PNG
+            </a>
+
+            <a href="#" id="modalDownloadSvg" download="qrcode.svg" style="flex: 1; text-align: center; align-content: center; text-decoration: none; padding: 12px; background: #f5f5f7; color: #0071e3; border: 1px solid #d2d2d7; border-radius: 12px; font-weight: 600; font-size: 14px; transition: 0.2s;">
+                Завантажити SVG
+            </a>
+        </div>
     </div>
 </div>
 
@@ -1039,7 +1045,16 @@ if (!isset($recentQrs)) {
                     modalContentLink.style.pointerEvents = 'none';
                     modalContentLink.style.color = '#1d1d1f';
                 }
-                modalDownload.href = fullPath;
+                var modalDownloadPngBtn = document.getElementById('modalDownloadPng');
+                if (modalDownloadPngBtn) {
+                    modalDownloadPngBtn.href = fullPath.replace('.svg', '.png');
+                }
+
+// Для SVG залишаємо оригінальний fullPath
+                var modalDownloadSvgBtn = document.getElementById('modalDownloadSvg');
+                if (modalDownloadSvgBtn) {
+                    modalDownloadSvgBtn.href = fullPath;
+                }
                 modal.style.display = 'flex';
             }
         });
