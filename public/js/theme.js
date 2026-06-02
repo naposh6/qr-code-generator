@@ -110,4 +110,35 @@
         });
     }
 
+    document.addEventListener('click', function (e) {
+        if (e.target && e.target.id === 'modalDownload') {
+            e.preventDefault();
+            const modalImg = document.getElementById('modalImg');
+            if (!modalImg || !modalImg.src) return;
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const sizeInput = document.getElementById('qr_size');
+                const size = sizeInput ? (parseInt(sizeInput.value) || 400) : 800;
+
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, size, size);
+                ctx.drawImage(img, 0, 0, size, size);
+
+                const pngUrl = canvas.toDataURL('image/png');
+                const downloadLink = document.createElement('a');
+                downloadLink.href = pngUrl;
+                downloadLink.download = 'qrcode.png';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            };
+            img.src = modalImg.src;
+        }
+    });
+
 })();
