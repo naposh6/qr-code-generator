@@ -39,7 +39,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const contentArea = document.getElementById('dynamic-content');
-        const baseAppPath = '/QR-code generator/public/';
+        const baseAppPath = '<?= rtrim(APP_URL, '/') . '/' ?>';
 
         function loadData(url) {
             contentArea.style.opacity = '0.3';

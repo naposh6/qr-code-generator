@@ -43,11 +43,16 @@ class AuthController {
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_nickname'] = $user['nickname'] ?? '';
-                header('Location: ./');
+
+                $baseDir = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
+                header('Location: ' . $baseDir . '/');
                 exit;
             }
             return "Невірний email або пароль!";
         }
+
+        $baseDir = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
+
         require_once __DIR__ . '/../../views/login.php';
     }
 

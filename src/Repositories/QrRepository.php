@@ -11,11 +11,11 @@ class QrRepository {
         $this->db = Database::getInstance()->getConnection();
     }
 
-    public function save(string $type, string $content, ?int $userId, ?string $filePath = null, ?string $title = null) : bool {
+    public function save(string $type, string $content, ?int $userId, ?string $filePath = null, ?string $title = null, ?string $svgPath = null) : bool {
         $shortCode = substr(md5(uniqid()), 0, 8);
 
-        $sql = "INSERT INTO qr_codes (original_url, short_code, media_path, qr_type, user_id, title) 
-            VALUES (:original_url, :short_code, :media_path, :qr_type, :user_id, :title)";
+        $sql = "INSERT INTO qr_codes (original_url, short_code, media_path, qr_type, user_id, title, svg_path) 
+        VALUES (:original_url, :short_code, :media_path, :qr_type, :user_id, :title, :svg_path)";
 
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
@@ -24,7 +24,8 @@ class QrRepository {
             'media_path'   => $filePath,
             'qr_type'      => $type,
             'user_id'      => $userId,
-            'title'        => $title
+            'title'        => $title,
+            'svg_path'     => $svgPath,
         ]);
     }
 

@@ -63,19 +63,10 @@ class Router {
 
     private function render404(string $requestUri, string $path): void {
         http_response_code(404);
-
-        echo "<div style='font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;'>";
-        echo "<h1 style='color: #1d1d1f; font-size: 32px;'>404 - Сторінку не знайдено</h1>";
-        echo "<p style='color: #86868b; margin-bottom: 30px;'>На жаль, за цим маршрутом нічого немає.</p>";
-
-        echo "<div style='text-align: left; background: #f5f5f7; padding: 20px; border-radius: 12px; font-size: 14px;'>";
-        echo "<b style='color: #1d1d1f;'>SYSTEM DEBUG INFO:</b><br><br>";
-        echo "Raw Request: <code style='color: #0071e3;'>" . htmlspecialchars($requestUri) . "</code><br>";
-        echo "Base Directory: <code>" . htmlspecialchars($this->baseDir) . "</code><br>";
-        echo "Resolved Path: <code>" . htmlspecialchars($path) . "</code>";
-        echo "</div><br>";
-
-        echo "<a href='{$this->baseDir}/' style='display: inline-block; padding: 10px 20px; background: #0071e3; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 500;'>Повернутися на головну</a>";
+        echo "<div style='font-family: system-ui; max-width: 600px; margin: 50px auto; text-align: center;'>";
+        echo "<h1>404 — Сторінку не знайдено</h1>";
+        echo "<p style='color: #86868b;'>На жаль, за цим маршрутом нічого немає.</p>";
+        echo "<a href='" . htmlspecialchars($this->baseDir) . "/' style='...'>Повернутися на головну</a>";
         echo "</div>";
     }
 

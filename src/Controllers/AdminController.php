@@ -64,7 +64,7 @@ class AdminController {
                 $this->userRepo->delete((int)$id);
             }
         }
-        header("Location: /QR-code generator/public/admin");
+        header("Location: " . BASE_DIR . "/admin");
         exit;
     }
 

@@ -7,10 +7,10 @@
     <meta charset="UTF-8">
     <title>Реєстрація - GenerQR</title>
     <link rel="icon" type="image/png" href="/QR-code generator/public/assets/logo-qr.png">
-    <link rel="stylesheet" href="<?= $baseDir ?>/public/css/style.css">
+    <link rel="stylesheet" href="<?= $baseDir ?>/css/style.css">
 </head>
 
-<script src="<?= $baseDir ?>/public/js/theme.js" defer></script>
+<script src="<?= $baseDir ?>/js/theme.js" defer></script>
 <body>
 <div class="container">
     <div class="card">

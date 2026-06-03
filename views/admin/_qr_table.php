@@ -1,6 +1,5 @@
 <?php /** @var array $allQrs */ ?>
 
-<script src="/QR-code generator/public/js/theme.js" defer></script>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px;">
 
     <h3 style="margin: 0; font-weight: 600;">Всі генерації системи</h3>

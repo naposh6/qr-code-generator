@@ -123,7 +123,7 @@ class UserController {
 
                 $this->userRepo->updateAvatar($userId, $newPath);
 
-                header("Location: /QR-code generator/public/profile?success=1");
+                header("Location: " . BASE_DIR . "/profile?success=1");
                 exit;
             } catch (\Exception $e) {
                 header("Location: /QR-code generator/public/profile?error=" . urlencode($e->getMessage()));

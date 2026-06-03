@@ -40,8 +40,19 @@ try {
 $router = new Router();
 $baseDir = $router->getBaseDir();
 
+if (!defined('BASE_DIR')) {
+    define('BASE_DIR', $baseDir);
+}
+
 if (!defined('APP_URL')) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $protocol = 'http';
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        $protocol = 'https';
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        $protocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
+        $protocol = 'https';
+    }
     define('APP_URL', $protocol . '://' . $_SERVER['HTTP_HOST'] . $baseDir);
 }
 

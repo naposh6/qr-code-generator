@@ -234,7 +234,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const baseAppPath = '/QR-code generator/public/';
+            const baseAppPath = '<?= rtrim(APP_URL, '/') . '/' ?>';
 
             const deleteBtnSelected = document.getElementById('delete-selected');
             const countSpan = document.getElementById('selected-count');

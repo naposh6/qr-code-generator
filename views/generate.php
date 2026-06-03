@@ -32,9 +32,7 @@ try {
         throw new \Exception("Файл занадто великий для сервера.");
     }
 
-    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'];
-    $baseAppUrl = "{$protocol}://{$host}/QR-code%20generator/public/";
+    $baseAppUrl = rtrim(APP_URL, '/') . '/';
 
     $finalData   = '';
     $factoryData = null;
