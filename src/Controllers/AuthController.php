@@ -20,10 +20,14 @@ class AuthController {
             }
 
             if ($this->userRepo->register($email, $password)) {
-                header('Location: /QR-code generator/public/login');
+                $baseDir = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
+                header('Location: ' . $baseDir . '/login');
                 exit;
             }
         }
+
+        $baseDir = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
+
         require_once __DIR__ . '/../../views/register.php';
     }
 

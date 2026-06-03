@@ -1,13 +1,16 @@
+<?php
+/** @var string $baseDir */
+?>
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <title>Вхід - GenerQR</title>
     <link rel="icon" type="image/png" href="/QR-code generator/public/assets/logo-qr.png">
-    <link rel="stylesheet" href="/QR-code generator/public/css/style.css">
+    <link rel="stylesheet" href="<?= $baseDir ?>/css/style.css">
 </head>
 
-<script src="/QR-code generator/public/js/theme.js" defer></script>
+<script src="<?= $baseDir ?>/js/theme.js" defer></script>
 <body>
 <div class="container">
     <div class="card">

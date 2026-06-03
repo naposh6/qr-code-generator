@@ -1,10 +1,7 @@
 RewriteEngine On
-RewriteBase "/QR-code generator/"
 
-RewriteCond %{DOCUMENT_ROOT}/QR-code\ generator/public/$1 -f
-RewriteRule ^public/(.*)$ public/$1 [L]
-
-RewriteCond %{DOCUMENT_ROOT}/QR-code\ generator/public/$1 -f
+RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
 RewriteRule ^(.*)$ public/$1 [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
