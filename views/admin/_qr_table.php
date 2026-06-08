@@ -1,0 +1,96 @@
+<?php
+/** @var array $allQrs */
+$appUrl = rtrim(ASSETS_URL, '/');
+?>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:0 5px;">
+    <h3 style="margin:0;font-weight:600;">Всі генерації системи</h3>
+    <div style="display:flex;align-items:center;gap:15px;">
+        <button id="delete-selected" class="apple-link" style="display:none;color:#ff3b30;background:rgba(255,59,48,0.1);border:none;padding:8px 15px;border-radius:12px;cursor:pointer;font-weight:600;">
+            🗑 Видалити обрані (<span id="selected-count">0</span>)
+        </button>
+        <div class="view-controls" style="display: flex; gap: 8px;">
+    		<button class="view-btn" onclick="setMode('grid')" style="background: transparent; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center;">
+        		<img src="<?= rtrim(ASSETS_URL, '/') ?>/assets/grid.png" alt="Grid" style="width: 22px; height: 22px; opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
+    		</button>
+    		<button class="view-btn" onclick="setMode('list')" style="background: transparent; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center;">
+        		<img src="<?= rtrim(ASSETS_URL, '/') ?>/assets/list.png" alt="List" style="width: 22px; height: 22px; opacity: 0.5; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
+    		</button>
+		</div>
+    </div>
+</div>
+
+<?php $needsCollapse = count($allQrs) > 6; ?>
+<div id="qr-container" class="<?= $needsCollapse ? 'collapsed fade-out' : '' ?>">
+    <table style="width:100%;border-collapse:collapse;">
+        <thead>
+        <tr style="border-bottom:1px solid var(--border-solid);text-align:left;color:var(--text-2);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">
+            <th style="padding:15px 10px;width:40px;text-align:center;"><input type="checkbox" id="selectAll" style="width:18px;height:18px;cursor:pointer;"></th>
+            <th style="padding:15px 10px;">Тип</th>
+            <th style="padding:15px 10px;">Вміст та QR</th>
+            <th style="padding:15px 10px;">Дата створення</th>
+            <th style="padding:15px 10px;text-align:right;">Дії</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (empty($allQrs)): ?>
+            <tr><td colspan="5" style="padding:40px;text-align:center;color:var(--text-2);">В системі ще не створено жодного QR-коду</td></tr>
+        <?php else: ?>
+            <?php foreach ($allQrs as $qr): ?>
+                <tr style="border-bottom:1px solid var(--border);transition:background 0.2s;" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding:12px 10px;text-align:center;">
+                        <input type="checkbox" class="qr-checkbox" value="<?= $qr['id'] ?>" style="width:18px;height:18px;cursor:pointer;">
+                    </td>
+                    <td style="padding:12px 10px;">
+                        <span class="badge"><?= strtoupper(htmlspecialchars($qr['qr_type'])) ?></span>
+                    </td>
+                    <td style="padding:12px 10px;max-width:350px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="position:relative;width:44px;height:44px;flex-shrink:0;background:var(--surface);padding:2px;border-radius:8px;border:1px solid var(--border-solid);box-shadow:var(--shadow-sm);">
+                                <img src="<?= $appUrl ?>/<?= htmlspecialchars($qr['media_path']) ?>"
+                                     style="width:100%;height:100%;border-radius:4px;object-fit:contain;" alt="QR">
+                                <div style="position:absolute;bottom:-4px;right:-4px;background:var(--surface);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;border:1px solid var(--border-solid);">
+                                    <?php
+                                    $icons = ['image'=>'🖼️','video'=>'🎥','pdf'=>'📄','wifi'=>'📶','call'=>'📞','vcard'=>'👤','text'=>'📝'];
+                                    echo $icons[$qr['qr_type']] ?? '🔗';
+                                    ?>
+                                </div>
+                            </div>
+                            <div style="overflow:hidden;">
+                                <div style="font-weight:600;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                    <?= htmlspecialchars(basename($qr['original_url'])) ?>
+                                </div>
+                                <div style="font-size:11px;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;">
+                                    <?= htmlspecialchars($qr['original_url']) ?>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding:12px 10px;color:var(--text-2);font-size:13px;">
+                        <?= date('d.m.Y', strtotime($qr['created_at'])) ?>
+                        <div style="font-size:10px;opacity:0.7;"><?= date('H:i', strtotime($qr['created_at'])) ?></div>
+                    </td>
+                    <td style="padding:12px 10px;text-align:right;">
+                        <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;">
+                            <button class="apple-link view-qr-btn"
+                                    style="background:var(--surface-2);border:none;padding:6px 12px;border-radius:20px;color:var(--accent);cursor:pointer;font-weight:500;font-size:12px;"
+                                    data-path="<?= htmlspecialchars(str_replace('.png', '.svg', $qr['media_path'] ?? '')) ?>"
+                                    data-content="<?= htmlspecialchars($qr['original_url'] ?? '') ?>"
+                                    data-type="<?= htmlspecialchars($qr['qr_type'] ?? '') ?>">
+                                Переглянути
+                            </button>
+                            <button class="delete-qr-btn" data-id="<?= $qr['id'] ?>"
+                                    style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:24px;line-height:1;padding:0 5px;"
+                                    title="Видалити">&times;</button>
+                        </div>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+<?php if ($needsCollapse): ?>
+<div class="expand-wrapper">
+    <button id="toggle-btn" class="btn-expand" onclick="toggleExpand()">Показати всі</button>
+</div>
+<?php endif; ?>
